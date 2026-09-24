@@ -296,7 +296,13 @@ async function cleanOldData() {
 chrome.runtime.onInstalled.addListener(async ({ reason }) => {
   buildMenu();
   syncBubble();
-  if (reason === 'update') cleanOldData().catch(() => {});
+  if (reason === 'update') {
+    cleanOldData().catch(() => {});
+    // Old layers on open tabs stop working after an update: put a fresh bubble back where the bubble is on everywhere
+    if (await chrome.permissions.contains({ origins: ALL_SITES })) {
+      for (const tab of await chrome.tabs.query({ url: ALL_SITES })) ensureOverlay(tab.id).catch(() => {});
+    }
+  }
   if (reason === 'install') {
     const { settings } = await chrome.storage.local.get('settings');
     if (!settings) await chrome.storage.local.set({ settings: { langs: [] } });

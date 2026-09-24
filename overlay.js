@@ -110,10 +110,10 @@
     .rchip:hover { box-shadow: 0 0 0 1px #EA580C; }
     .card.phrase .nl { font-size: 1.1em; line-height: 1.2; }
     /* Sentences: home language and Dutch stacked instead of side by side, with ▶▶ next to both */
-    .card.phrase .row { grid-template-columns: 1fr auto; }
-    .card.phrase .row > .half:first-child { grid-column: 1; grid-row: 1; }
+    .card.phrase .row { grid-template-columns: 1fr auto; grid-auto-rows: 1fr; }
+    .card.phrase .row > .half:first-child { grid-column: 1; grid-row: 1; padding-bottom: .3em; border-bottom: .06em solid transparent; }
     .card.phrase .row > .nlh { grid-column: 1; grid-row: 2; border-left: 0; padding-left: 0; border-top: .06em solid #D1D5DB; padding-top: .3em; }
-    .card.phrase .row > .pair { grid-column: 2; grid-row: 1 / span 2; }
+    .card.phrase .row > .pair { grid-column: 2; grid-row: 1 / span 2; align-self: center; margin-left: .15em; }
     .card.phrase .word { font-size: .72em; overflow-wrap: break-word; }
     .none { color: #6B7280; font-size: 12px; padding: 6px 0 10px; }
     .dockgrid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; }
@@ -130,6 +130,9 @@
     select.chip { appearance: none; -webkit-appearance: none; background: #fff; color: #2563EB; font-family: inherit; }
   `;
 
+  // A layer left behind by an earlier version (after the extension was updated or reloaded) no longer
+  // works: remove it, so there is only one bubble and 'Alles weg' clears everything.
+  document.querySelectorAll('pictoklas-laag').forEach(old => old.remove());
   const host = document.createElement('pictoklas-laag');
   host.style.cssText = 'all:initial;position:fixed;inset:0;z-index:2147483647;pointer-events:none;display:block;';
   const root = host.attachShadow({ mode: 'closed' });
@@ -252,6 +255,8 @@
       n.className = 'word';
       n.textContent = isPhrase(id) ? labelOf(id) : labelOf(id).toLowerCase();
       const nl = half('half nlh', 'nl', n);
+      // Sentences are stacked: the Dutch line gets its own ▶ so both ▶ buttons line up in one column
+      if (isPhrase(id)) nl.appendChild(playBtn(['nl'], 'Nederlands', '#111827'));
 
       row.append(own, nl, playBtn([code, 'nl'], 'Eerst ' + L.name + ', dan Nederlands', '#111827', 'pair'));
       box.appendChild(row);
@@ -911,6 +916,13 @@
     else if (msg.type === 'pk-dock') { dock(true, !!msg.edit); reply({ ok: true }); }
     else if (msg.type === 'pk-bubble-state') { allSites = !!msg.on; if (editing) fillDock(); }
   });
+
+  // When this copy is cut off from the extension (update/reload), take its cards and bubble off the page
+  const orphanCheck = setInterval(() => {
+    let alive = false;
+    try { alive = !!(chrome.runtime && chrome.runtime.id); } catch (e) { alive = false; }
+    if (!alive) { clearInterval(orphanCheck); host.remove(); }
+  }, 2000);
 
   globalThis.PKOverlay = { show, remove, clear, dock, open: () => [...cards.keys()] };
 })();
