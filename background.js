@@ -195,6 +195,35 @@ async function genderCoverage(codes) {
   return out;
 }
 
+// ---------- Typed sentences ----------
+const MAX_PHRASES = 8;
+
+function hashText(s) {
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0;
+  return h.toString(36);
+}
+
+// Stores a sentence the teacher typed and returns its card id. Keeps the last few as a history;
+// older ones are forgotten together with their translations and speech.
+async function addPhrase(raw) {
+  const text = String(raw || '').replace(/\s+/g, ' ').trim().slice(0, 150);
+  if (!text) return null;
+  const id = 'zin-' + hashText(text.toLowerCase());
+  const { phrases = [] } = await chrome.storage.local.get('phrases');
+  let list = phrases.filter(x => x.id !== id);
+  list.unshift({ id, text });
+  const dropped = list.slice(MAX_PHRASES).map(x => x.id);
+  list = list.slice(0, MAX_PHRASES);
+  await mutateWords(words => {
+    words[id] = words[id] || {};
+    words[id].nl = Object.assign({}, words[id].nl, { text });
+    for (const old of dropped) delete words[old];
+  });
+  await chrome.storage.local.set({ phrases: list });
+  return id;
+}
+
 // ---------- Helpers ----------
 
 function toBase64(buf) {
@@ -225,6 +254,7 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
     voices: () => voiceLangs(),
     'gender-coverage': () => genderCoverage(msg.langs),
     resolve: () => resolvePicto(msg.picto, msg.langs),
+    'phrase-add': () => addPhrase(msg.text),
     options: () => openOptions(msg.picto, msg.lang),
     'bubble-sync': () => syncBubble(),
     'bubble-state': () => chrome.permissions.contains({ origins: ALL_SITES }),

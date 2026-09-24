@@ -97,6 +97,24 @@
     .switchrow { display: flex; align-items: center; gap: 6px; font-weight: 600; cursor: pointer; }
     .switchrow input { width: 16px; height: 16px; margin: 0; accent-color: #2563EB; }
     .dockbtn2 { all: unset; cursor: pointer; background: #2563EB; color: #fff; font-weight: 700; font-size: 12px; padding: 4px 12px; border-radius: 999px; }
+    .saywrap { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #E5E7EB; }
+    .saybox { display: flex; gap: 6px; }
+    .saybox input { flex: 1; min-width: 0; box-sizing: border-box; border: 1px solid #D1D5DB; border-radius: 8px; padding: 7px 9px; font: inherit; color: #111827; background: #fff; }
+    .saybox input:focus { outline: 2px solid #EA580C; border-color: transparent; }
+    .saybtn { all: unset; cursor: pointer; background: #EA580C; color: #fff; border-radius: 8px; padding: 0 11px; display: flex; align-items: center; gap: 5px; font-weight: 700; font-size: 13px; }
+    .saybtn:hover { filter: brightness(1.08); }
+    .saybtn svg { width: 18px; height: 18px; }
+    .recent { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
+    .rchip { all: unset; cursor: pointer; max-width: 185px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; padding: 3px 9px;
+      border-radius: 999px; background: #FFF7ED; color: #9A3412; box-shadow: 0 0 0 1px #FED7AA; }
+    .rchip:hover { box-shadow: 0 0 0 1px #EA580C; }
+    .card.phrase .nl { font-size: 1.1em; line-height: 1.2; }
+    /* Sentences: home language and Dutch stacked instead of side by side, with ▶▶ next to both */
+    .card.phrase .row { grid-template-columns: 1fr auto; }
+    .card.phrase .row > .half:first-child { grid-column: 1; grid-row: 1; }
+    .card.phrase .row > .nlh { grid-column: 1; grid-row: 2; border-left: 0; padding-left: 0; border-top: .06em solid #D1D5DB; padding-top: .3em; }
+    .card.phrase .row > .pair { grid-column: 2; grid-row: 1 / span 2; }
+    .card.phrase .word { font-size: .72em; overflow-wrap: break-word; }
     .none { color: #6B7280; font-size: 12px; padding: 6px 0 10px; }
     .dockgrid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; }
     .dtile { all: unset; position: relative; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; border-radius: 8px; padding: 3px 1px 4px; text-align: center;
@@ -147,7 +165,12 @@
   };
   const PLAY = 'M7 4.5v15l13-7.5z';
 
-  const labelOf = id => (words[id] && words[id].nl && words[id].nl.text) || PK.picto(id).label;
+  const labelOf = id => (words[id] && words[id].nl && words[id].nl.text) || (PK.picto(id) || {}).label || '';
+  // Typed sentences ("zin-…") behave like pictograms, with the speech-bubble icon
+  const isPhrase = id => /^zin-/.test(id);
+  const PHRASE_COLOR = '#EA580C';
+  const pic = id => PK.picto(id) || (isPhrase(id) ? { id, label: labelOf(id), color: PHRASE_COLOR, iconId: 'praten', phrase: true } : null);
+  let phrases = []; // recent sentences [{ id, text }]
   const textOf = (id, code) => code === 'nl' ? labelOf(id) : ((words[id] && words[id][code] && words[id][code].text) || '');
   const hasAudio = (id, code) => !!(words[id] && words[id][code] && words[id][code].audio);
   // Computer voices (chrome.tts) for when there is no recording
@@ -165,7 +188,7 @@
 
   function fillCard(card) {
     const id = card.dataset.id;
-    const p = PK.picto(id);
+    const p = pic(id);
     const head = card.querySelector('.nl');
     head.textContent = '';
     const label = document.createElement('span');
@@ -227,7 +250,7 @@
 
       const n = document.createElement('span');
       n.className = 'word';
-      n.textContent = labelOf(id).toLowerCase();
+      n.textContent = isPhrase(id) ? labelOf(id) : labelOf(id).toLowerCase();
       const nl = half('half nlh', 'nl', n);
 
       row.append(own, nl, playBtn([code, 'nl'], 'Eerst ' + L.name + ', dan Nederlands', '#111827', 'pair'));
@@ -263,7 +286,11 @@
     card._busy = true;
     chrome.runtime.sendMessage({ type: 'resolve', picto: card.dataset.id, langs })
       .catch(() => {})
-      .finally(() => { card._busy = false; if (card.isConnected) fillCard(card); });
+      .finally(() => {
+        card._busy = false;
+        if (card.isConnected) fillCard(card);
+        if (card._speak) { card._speak = false; setTimeout(() => play(card.dataset.id, sequence(card)), 250); }
+      });
   }
 
   // Grey play button clicked: explain, and offer to record the word yourself
@@ -400,7 +427,7 @@
   }
 
   function makeCard(id) {
-    const p = PK.picto(id);
+    const p = pic(id);
     const card = document.createElement('div');
     card.className = 'card';
     card.dataset.id = id;
@@ -409,7 +436,8 @@
     icon.className = 'icon';
     icon.style.background = p.color;
     icon.title = 'Klik: per taal eerst de moedertaal, dan het Nederlands';
-    icon.appendChild(PK.icon(id));
+    icon.appendChild(PK.icon(p.iconId || id));
+    if (p.phrase) card.classList.add('phrase');
 
     const nl = document.createElement('div');
     nl.className = 'nl';
@@ -503,8 +531,8 @@
     return card;
   }
 
-  function show(id) {
-    if (!PK.picto(id)) return;
+  function show(id, opts) {
+    if (!pic(id)) return;
     mount();
     dock();
     let card = cards.get(id);
@@ -513,11 +541,13 @@
       card.classList.remove('flash');
       void card.offsetWidth;
       card.classList.add('flash');
+      if (opts && opts.speak) play(id, sequence(card));
       return;
     }
     card = makeCard(id);
+    if (opts && opts.speak) card._speak = true;
     cards.set(id, card);
-    const w = Math.min(340, window.innerWidth * 0.42);
+    const w = Math.min(isPhrase(id) ? 400 : 340, window.innerWidth * 0.42);
     setSize(card, w);
     card.style.zIndex = ++z;
     card.style.visibility = 'hidden';
@@ -686,6 +716,46 @@
     fillDock();
   }
 
+  // "Typ een zin": the teacher types a short sentence; it becomes a card in Dutch + the home language(s)
+  function sayBox() {
+    const box = el('div', 'saywrap');
+    const form = el('form', 'saybox');
+    const input = el('input');
+    input.type = 'text';
+    input.maxLength = 150;
+    input.placeholder = 'Typ een zin, bijvoorbeeld: Pak je schrift';
+    // Keys typed here must not reach the page (e.g. space or arrows would move a presentation on)
+    for (const t of ['keydown', 'keyup', 'keypress']) input.addEventListener(t, e => { e.stopPropagation(); if (t === 'keydown' && e.key === 'Escape') setPanel(false); });
+    const go = el('button', 'saybtn');
+    go.type = 'submit';
+    go.append(PK.icon('praten'), el('span', null, 'Zeg het'));
+    form.append(input, go);
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const text = input.value.trim();
+      if (!text) { input.focus(); return; }
+      input.value = '';
+      const r = await chrome.runtime.sendMessage({ type: 'phrase-add', text }).catch(() => null);
+      const id = r && r.result;
+      if (!id) return;
+      words[id] = words[id] || {};
+      words[id].nl = Object.assign({}, words[id].nl, { text });
+      show(id, { speak: true });
+    });
+    box.appendChild(form);
+    if (phrases.length) {
+      const recent = el('div', 'recent');
+      for (const ph of phrases.slice(0, 5)) {
+        const c = el('button', 'rchip', ph.text);
+        c.title = 'Opnieuw tonen en uitspreken';
+        c.addEventListener('click', () => show(ph.id, { speak: true }));
+        recent.appendChild(c);
+      }
+      box.appendChild(recent);
+    }
+    return box;
+  }
+
   function fillDock() {
     if (!bpanel) return;
     bpanel.textContent = '';
@@ -708,6 +778,8 @@
     }
     top.append(t, acts);
     bpanel.appendChild(top);
+
+    if (!editing) bpanel.appendChild(sayBox());
 
     const chosen = new Set(PK.chosen(settings).map(p => p.id));
     if (editing) bpanel.appendChild(el('div', 'hintline', 'Tik op een pictogram om het aan of uit te zetten.'));
@@ -806,8 +878,9 @@
     placePanel();
   }
 
-  chrome.storage.local.get(['words', 'settings']).then(d => {
+  chrome.storage.local.get(['words', 'settings', 'phrases']).then(d => {
     words = d.words || {};
+    phrases = d.phrases || [];
     settings = Object.assign({ langs: [] }, d.settings);
     cards.forEach(fillCard);
     dock(); // the bubble appears as soon as PictoClass is active on the page
@@ -816,7 +889,13 @@
     if (area !== 'local') return;
     if (ch.words) words = ch.words.newValue || {};
     if (ch.settings) settings = Object.assign({ langs: [] }, ch.settings.newValue);
-    if (ch.words || ch.settings) { cards.forEach(fillCard); fillDock(); }
+    if (ch.phrases) { phrases = ch.phrases.newValue || []; if (!editing) fillDock(); }
+    if (ch.words || ch.settings) {
+      cards.forEach(fillCard);
+      // Don't rebuild the panel while the teacher is typing a sentence in it
+      const typing = bpanel && bpanel.contains(root.activeElement);
+      if (!typing) fillDock();
+    }
     if (ch.settings) placeBubble();
     if (ch.settings && editing) {
       const a = JSON.stringify((ch.settings.oldValue || {}).langs), b = JSON.stringify((ch.settings.newValue || {}).langs);

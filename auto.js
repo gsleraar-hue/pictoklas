@@ -88,12 +88,35 @@ function ensureTexts(code) {
 
 const resolveJobs = new Map();
 
-// Makes sure this pictogram has a word and, where possible, a spoken version for these languages
+// A typed sentence ("zin-…") is handled like a pictogram whose Dutch text is the sentence
+async function phraseOf(id) {
+  if (!/^zin-/.test(id)) return null;
+  const { words = {} } = await chrome.storage.local.get('words');
+  const text = words[id] && words[id].nl && words[id].nl.text;
+  return text ? { id, label: text, phrase: true } : null;
+}
+
+// Translates a typed sentence from Dutch into one language (once)
+async function translatePhrase(p, code) {
+  const L = PK.lang(code);
+  if (!L || code === 'nl') return;
+  const { words = {} } = await chrome.storage.local.get('words');
+  if (words[p.id] && words[p.id][code] && words[p.id][code].text) return;
+  const [t] = await translateLines([p.label], 'nl', L.gt);
+  if (!t) return;
+  await mutateWords(ws => {
+    ws[p.id] = ws[p.id] || {};
+    const e = ws[p.id][code] = ws[p.id][code] || {};
+    if (!e.text) { e.text = t; e.auto = true; }
+  });
+}
+
+// Makes sure this pictogram (or sentence) has a word and, where possible, a spoken version for these languages
 async function resolvePicto(picto, codes) {
-  const p = PK.picto(picto);
+  const p = PK.picto(picto) || await phraseOf(picto);
   if (!p) return false;
   codes = [...new Set(['nl', ...(codes || [])])].filter(c => PK.lang(c));
-  await Promise.all(codes.map(c => ensureTexts(c).catch(() => {})));
+  await Promise.all(codes.map(c => (p.phrase ? translatePhrase(p, c) : ensureTexts(c)).catch(() => {})));
   for (const code of codes) {
     const key = picto + ':' + code;
     if (!resolveJobs.has(key)) {
@@ -122,7 +145,7 @@ async function findRecording(p, code) {
   const w = (words[p.id] && words[p.id][code]) || {};
   if (w.audio) return;
   if (w.soundTried && Date.now() - w.soundTried < 3 * DAY) return;
-  const text = code === 'nl' ? ((w.text) || p.label).toLowerCase() : w.text;
+  const text = code === 'nl' ? (p.phrase ? p.label : ((w.text) || p.label).toLowerCase()) : w.text;
   if (!text) return;
   const audio = await googleSpeech(text, code).catch(() => null);
   if (!audio) {
