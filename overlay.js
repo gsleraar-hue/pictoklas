@@ -105,9 +105,11 @@
     .saybtn:hover { filter: brightness(1.08); }
     .saybtn svg { width: 18px; height: 18px; }
     .recent { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
-    .rchip { all: unset; cursor: pointer; max-width: 185px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; padding: 3px 9px;
-      border-radius: 999px; background: #FFF7ED; color: #9A3412; box-shadow: 0 0 0 1px #FED7AA; }
+    .rchip { display: inline-flex; align-items: center; max-width: 200px; border-radius: 999px; background: #FFF7ED; box-shadow: 0 0 0 1px #FED7AA; }
     .rchip:hover { box-shadow: 0 0 0 1px #EA580C; }
+    .rtext { all: unset; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; padding: 3px 4px 3px 9px; color: #9A3412; }
+    .rdel { all: unset; cursor: pointer; flex: none; width: 18px; height: 18px; margin-right: 3px; border-radius: 50%; text-align: center; font: 700 13px/18px 'Segoe UI', system-ui, sans-serif; color: #C2410C; }
+    .rdel:hover { background: #EA580C; color: #fff; }
     .card.phrase .nl { font-size: 1.1em; line-height: 1.2; }
     /* Sentences: home language and Dutch stacked instead of side by side, with ▶▶ next to both */
     .card.phrase .row { grid-template-columns: 1fr auto; grid-auto-rows: 1fr; }
@@ -750,11 +752,19 @@
     box.appendChild(form);
     if (phrases.length) {
       const recent = el('div', 'recent');
-      for (const ph of phrases.slice(0, 5)) {
-        const c = el('button', 'rchip', ph.text);
+      for (const ph of phrases) {
+        const chip = el('span', 'rchip');
+        const c = el('button', 'rtext', ph.text);
         c.title = 'Opnieuw tonen en uitspreken';
         c.addEventListener('click', () => show(ph.id, { speak: true }));
-        recent.appendChild(c);
+        const x = el('button', 'rdel', '×');
+        x.title = 'Zin verwijderen';
+        x.addEventListener('click', () => {
+          remove(ph.id); // also take its card off the screen
+          chrome.runtime.sendMessage({ type: 'phrase-remove', id: ph.id }).catch(() => {});
+        });
+        chip.append(c, x);
+        recent.appendChild(chip);
       }
       box.appendChild(recent);
     }

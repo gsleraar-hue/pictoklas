@@ -224,6 +224,15 @@ async function addPhrase(raw) {
   return id;
 }
 
+// Forgets a typed sentence together with its translations and speech
+async function removePhrase(id) {
+  if (!/^zin-/.test(String(id))) return false;
+  const { phrases = [] } = await chrome.storage.local.get('phrases');
+  await mutateWords(words => { delete words[id]; });
+  await chrome.storage.local.set({ phrases: phrases.filter(x => x.id !== id) });
+  return true;
+}
+
 // ---------- Helpers ----------
 
 function toBase64(buf) {
@@ -255,6 +264,7 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
     'gender-coverage': () => genderCoverage(msg.langs),
     resolve: () => resolvePicto(msg.picto, msg.langs),
     'phrase-add': () => addPhrase(msg.text),
+    'phrase-remove': () => removePhrase(msg.id),
     options: () => openOptions(msg.picto, msg.lang),
     'bubble-sync': () => syncBubble(),
     'bubble-state': () => chrome.permissions.contains({ origins: ALL_SITES }),
