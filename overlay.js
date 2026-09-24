@@ -908,7 +908,9 @@
     if (ch.words || ch.settings) {
       cards.forEach(fillCard);
       // Don't rebuild the panel while the teacher is typing a sentence in it
-      const typing = bpanel && bpanel.contains(root.activeElement);
+      // Only while a sentence is being typed (a focused button or list must not block the refresh)
+      const act = root.activeElement;
+      const typing = !!(act && bpanel && bpanel.contains(act) && act.tagName === 'INPUT' && act.type === 'text');
       if (!typing) fillDock();
     }
     if (ch.settings) placeBubble();
