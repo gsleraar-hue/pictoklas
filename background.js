@@ -1,5 +1,5 @@
 // PictoClass service worker: puts pictograms on the tab, stores and plays pronunciations.
-importScripts('picto.js', 'auto.js');
+importScripts('picto.js', 'auto.js', 'voices.js');
 
 const BORD = chrome.runtime.getURL('bord.html');
 
@@ -126,32 +126,50 @@ async function voiceLangs() {
   return [...new Set(v.map(x => x.lang).filter(Boolean))];
 }
 
-function speak(text, lang) {
+function speak(text, lang, voiceName) {
   return new Promise(done => {
     const t = setTimeout(done, 10000);
-    chrome.tts.speak(text, {
+    const opts = {
       lang, rate: 0.85,
       onEvent: e => { if (['end', 'interrupted', 'cancelled', 'error'].includes(e.type)) { clearTimeout(t); done(); } }
-    });
+    };
+    if (voiceName) opts.voiceName = voiceName;
+    chrome.tts.speak(text, opts);
   });
+}
+
+// A system voice of the chosen gender for this language, or null
+function voiceFor(voices, code, gender) {
+  const mine = voices.filter(v => v.lang && (v.lang === code || v.lang.startsWith(code + '-')));
+  if (!gender) return null;
+  // Prefer the main country of the language (nl-NL over nl-BE), then local voices (no network needed)
+  const home = code + '-' + code.toUpperCase();
+  const fit = mine.filter(v => PKVoices.genderOf(v.voiceName) === gender);
+  const score = v => (v.lang === home ? 0 : 2) + (v.remote ? 1 : 0);
+  return fit.sort((a, b) => score(a) - score(b))[0] || null;
 }
 
 let playRun = 0;
 
 // seq: language codes in playback order (repeats allowed, e.g. ['ar','nl','uk','nl']).
-// Uses the stored recording when there is one, otherwise the computer voice for that language.
+// Order per language: own recording > a system voice of the chosen gender > stored Google speech > any system voice.
 async function play(picto, seq) {
-  const { words = {} } = await chrome.storage.local.get('words');
+  const { words = {}, settings = {} } = await chrome.storage.local.get(['words', 'settings']);
   const w = words[picto] || {};
   const order = Array.isArray(seq) && seq.length ? seq : ['nl'];
-  const langs = await voiceLangs();
+  const voices = await chrome.tts.getVoices();
+  const gender = settings.voiceGender === 'male' || settings.voiceGender === 'female' ? settings.voiceGender : '';
   const label = (w.nl && w.nl.text) || (PK.picto(picto) || {}).label || '';
   const items = [];
   for (const c of order) {
-    if (w[c] && w[c].audio) { items.push({ audio: w[c].audio }); continue; }
-    const text = c === 'nl' ? label.toLowerCase() : (w[c] && w[c].text) || '';
-    const voice = langs.find(l => l === c || l.startsWith(c + '-'));
-    if (text && voice) items.push({ text, lang: voice });
+    const e = w[c] || {};
+    const text = c === 'nl' ? label.toLowerCase() : e.text || '';
+    if (e.audio && e.src === 'mic') { items.push({ audio: e.audio }); continue; }
+    const pick = text && voiceFor(voices, c, gender);
+    if (pick) { items.push({ text, lang: pick.lang, voiceName: pick.voiceName }); continue; }
+    if (e.audio) { items.push({ audio: e.audio }); continue; }
+    const any = voices.find(v => v.lang && (v.lang === c || v.lang.startsWith(c + '-')));
+    if (text && any) items.push({ text, lang: any.lang });
   }
   if (!items.length) return false;
 
@@ -162,11 +180,19 @@ async function play(picto, seq) {
     for (const it of items) {
       if (mine !== playRun) return;
       if (it.audio) await chrome.runtime.sendMessage({ target: 'offscreen', type: 'play', list: [it.audio] }).catch(() => {});
-      else await speak(it.text, it.lang);
+      else await speak(it.text, it.lang, it.voiceName);
       await new Promise(r => setTimeout(r, 300));
     }
   })();
   return true;
+}
+
+// For the bubble: which of these languages have a voice of each gender on this computer
+async function genderCoverage(codes) {
+  const voices = await chrome.tts.getVoices();
+  const out = {};
+  for (const c of codes || []) out[c] = { male: !!voiceFor(voices, c, 'male'), female: !!voiceFor(voices, c, 'female') };
+  return out;
 }
 
 // ---------- Helpers ----------
@@ -197,6 +223,7 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
     clear: () => clearAll(),
     play: () => play(msg.picto, msg.seq),
     voices: () => voiceLangs(),
+    'gender-coverage': () => genderCoverage(msg.langs),
     resolve: () => resolvePicto(msg.picto, msg.langs),
     options: () => openOptions(msg.picto, msg.lang),
     'bubble-sync': () => syncBubble(),

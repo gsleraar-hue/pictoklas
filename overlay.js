@@ -90,6 +90,9 @@
     .dtile.off .mark { background: #fff; box-shadow: 0 0 0 1.5px #9CA3AF; }
     .bpanel.editing .dtile:hover { background: #EEF2FF; }
     .flabel { width: 100%; font-size: 12px; font-weight: 700; color: #374151; }
+    .flabel.inline { width: auto; margin-right: 4px; }
+    .voicerow { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #E5E7EB; }
+    .hintline.small { margin: 6px 0 0; font-size: 11.5px; }
     .editbottom { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #E5E7EB; }
     .switchrow { display: flex; align-items: center; gap: 6px; font-weight: 600; cursor: pointer; }
     .switchrow input { width: 16px; height: 16px; margin: 0; accent-color: #2563EB; }
@@ -667,10 +670,18 @@
     return chrome.storage.local.get('settings').then(d => chrome.storage.local.set({ settings: Object.assign({}, d.settings, patch) }));
   }
 
+  let coverage = null; // per language: is there a male / female voice on this computer?
+
+  function askCoverage() {
+    const codes = ['nl', ...(settings.langs || [])];
+    chrome.runtime.sendMessage({ type: 'gender-coverage', langs: codes }).then(r => { coverage = (r && r.result) || null; if (editing) fillDock(); }).catch(() => {});
+  }
+
   function setEditing(on) {
     editing = on;
     if (on) {
       chrome.runtime.sendMessage({ type: 'bubble-state' }).then(r => { allSites = !!(r && r.result); if (editing) fillDock(); }).catch(() => {});
+      askCoverage();
     }
     fillDock();
   }
@@ -757,11 +768,27 @@
         chrome.runtime.sendMessage({ type: cb.checked ? 'bubble-grant' : 'bubble-revoke' }).catch(() => {});
         if (!cb.checked) allSites = false;
       });
+      // Voice: default / female / male. Tell honestly which languages have no voice of that kind here.
+      const vrow = el('div', 'voicerow');
+      vrow.appendChild(el('span', 'flabel inline', 'Stem'));
+      const cur = settings.voiceGender || '';
+      for (const [val, name] of [['', 'Standaard'], ['female', 'Vrouw'], ['male', 'Man']]) {
+        const b = el('button', 'chip' + (cur === val ? ' on' : ''), name);
+        b.addEventListener('click', () => saveSettings({ voiceGender: val || undefined }));
+        vrow.appendChild(b);
+      }
+      bpanel.append(foot, vrow);
+      if (cur && coverage) {
+        const missing = Object.keys(coverage).filter(c => !coverage[c][cur]).map(c => (PK.lang(c) || {}).name).filter(Boolean);
+        bpanel.appendChild(el('div', 'hintline small', missing.length
+          ? 'Geen ' + (cur === 'male' ? 'mannenstem' : 'vrouwenstem') + ' op deze computer voor: ' + missing.join(', ') + '. Daar klinkt de standaardstem (of je eigen opname).'
+          : '✓ Voor al je talen is een ' + (cur === 'male' ? 'mannenstem' : 'vrouwenstem') + ' beschikbaar.'));
+      }
       const more = el('button', 'dockx', 'Woorden verbeteren →');
       more.addEventListener('click', () => chrome.runtime.sendMessage({ type: 'options' }).catch(() => {}));
       const bottom = el('div', 'editbottom');
       bottom.append(row, more);
-      bpanel.append(foot, bottom);
+      bpanel.append(bottom);
     } else {
       if (langs.length) {
         for (const [code, name] of [['', 'Alle talen'], ...langs.map(c => [c, PK.lang(c).name])]) {
@@ -791,6 +818,10 @@
     if (ch.settings) settings = Object.assign({ langs: [] }, ch.settings.newValue);
     if (ch.words || ch.settings) { cards.forEach(fillCard); fillDock(); }
     if (ch.settings) placeBubble();
+    if (ch.settings && editing) {
+      const a = JSON.stringify((ch.settings.oldValue || {}).langs), b = JSON.stringify((ch.settings.newValue || {}).langs);
+      if (a !== b) askCoverage();
+    }
   });
 
   chrome.runtime.onMessage.addListener((msg, sender, reply) => {
