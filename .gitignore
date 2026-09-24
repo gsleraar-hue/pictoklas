@@ -1,0 +1,8 @@
+# Built packages
+store/*.zip
+# Raw captures used to compose the store screenshots
+store/screens/
+# Personal Dutch working notes (not part of the project)
+LEESMIJ.md
+store/WINKELVERMELDING.md
+store/invulhulp.html

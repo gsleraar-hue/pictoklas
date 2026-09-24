@@ -1,0 +1,62 @@
+{
+  "manifest_version": 3,
+  "name": "PictoClass",
+  "version": "1.8.0",
+  "description": "Grote, verplaatsbare pictogrammen voor de ISK-klas, automatisch met het woord en de uitspraak in de moedertaal.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "PictoClass",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "options_page": "options.html",
+  "permissions": [
+    "storage",
+    "unlimitedStorage",
+    "activeTab",
+    "scripting",
+    "offscreen",
+    "tts",
+    "contextMenus"
+  ],
+  "host_permissions": [
+    "https://translate.google.com/*",
+    "https://translate.googleapis.com/*",
+    "https://api.mymemory.translated.net/*"
+  ],
+  "optional_host_permissions": [
+    "https://*/*",
+    "http://*/*"
+  ],
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Alt+Shift+P"
+      },
+      "description": "PictoClass openen"
+    },
+    "open-dock": {
+      "suggested_key": {
+        "default": "Alt+Shift+O"
+      },
+      "description": "PictoClass-bubbel tonen en openen"
+    },
+    "clear-all": {
+      "suggested_key": {
+        "default": "Alt+Shift+X"
+      },
+      "description": "Alle pictogrammen weghalen"
+    }
+  }
+}
