@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>Marquee</title>
+<style>
+  html, body { margin: 0; width: 1400px; height: 560px; overflow: hidden; }
+  body { background: linear-gradient(120deg, #2563EB 0%, #1E3A8A 70%); font-family: "Segoe UI", system-ui, sans-serif; color: #fff; position: relative; }
+  .logo { position: absolute; left: 90px; top: 92px; width: 96px; height: 96px; }
+  h1 { position: absolute; left: 90px; top: 196px; margin: 0; font-size: 84px; font-weight: 800; letter-spacing: -.01em; }
+  p { position: absolute; left: 92px; top: 302px; margin: 0; width: 560px; font-size: 28px; line-height: 1.35; color: #DBEAFE; }
+  .tags { position: absolute; left: 92px; top: 458px; display: flex; gap: 10px; }
+  .tags span { background: rgba(255,255,255,.14); border-radius: 999px; padding: 7px 16px; font-size: 18px; font-weight: 600; }
+
+  /* Large sample card, drawn like the real card in the extension */
+  .card { position: absolute; left: 820px; top: 60px; width: 340px; background: #fff; border-radius: 22px; overflow: hidden; color: #111827;
+    box-shadow: 0 24px 60px rgba(0,0,0,.35); transform: rotate(-2deg); font-size: 28px; }
+  .card .ic { height: 170px; display: flex; align-items: center; justify-content: center; }
+  .card .ic svg { width: 130px; height: 130px; }
+  .card .nl { font-size: 40px; font-weight: 800; text-align: center; padding: 12px 0 8px; display: flex; align-items: center; justify-content: center; gap: 12px; }
+  .play { width: 34px; height: 34px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex: none; }
+  .play svg { width: 16px; height: 16px; }
+  .rows { padding: 0 16px 16px; display: flex; flex-direction: column; gap: 9px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr auto; align-items: center; gap: 10px; background: #F3F4F6; border-radius: 12px; padding: 8px 12px; }
+  .half { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .half.nlh { border-left: 2px solid #D1D5DB; padding-left: 12px; }
+  .txt { flex: 1; display: flex; flex-direction: column; }
+  .code { font-size: 12px; font-weight: 700; letter-spacing: .06em; color: #6B7280; }
+  .w { font-size: 22px; font-weight: 600; }
+  .half.nlh .w { font-weight: 500; color: #374151; }
+  .pair { height: 30px; padding: 0 7px; border-radius: 15px; background: #111827; display: flex; align-items: center; }
+  .pair svg { width: 13px; height: 13px; }
+
+  /* Small cards behind */
+  .mini { position: absolute; width: 150px; background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 14px 34px rgba(0,0,0,.3); }
+  .mini .ic { height: 110px; display: flex; align-items: center; justify-content: center; }
+  .mini .ic svg { width: 76px; height: 76px; }
+  .mini .l { color: #111827; font-weight: 800; font-size: 18px; text-align: center; padding: 9px 4px 12px; }
+  .bubble { position: absolute; left: 1300px; top: 470px; width: 72px; height: 72px; border-radius: 50%; background: #2563EB; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 10px 24px rgba(0,0,0,.35), 0 0 0 4px rgba(255,255,255,.9); }
+  .bubble svg { width: 40px; height: 40px; }
+</style>
+</head>
+<body>
+<img class="logo" src="../icons/icon128.png" alt="">
+<h1>PictoClass</h1>
+<p>Grote pictogrammen voor de ISK-klas, met de moedertaal ernaast. Eerst in de eigen taal, dan in het Nederlands.</p>
+<div class="tags"><span>27 talen</span><span>Werkt op elke pagina</span><span>Geen voorbereiding</span></div>
+<div id="scene"></div>
+<script src="../picto.js"></script>
+<script src="marquee.js"></script>
+</body>
+</html>
