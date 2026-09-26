@@ -366,7 +366,7 @@ var PK = globalThis.PK || (function () {
   const langName = (code, b) => { const L = LANGS.find(x => x.code === code); if (!L) return code; return (b || base()) === 'en' ? NAME_EN[code] || L.name : L.name; };
   // Interface text; {name} placeholders are filled from vars
   const t = (key, vars) => {
-    const s = (STR[base()] && STR[base()][key]) || STR.nl[key] || key;
+    const s = (STR[base()] && STR[base()][key]) || STR.en[key] || key;
     return vars ? s.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? vars[k] : m)) : s;
   };
 
