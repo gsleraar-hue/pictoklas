@@ -31,6 +31,10 @@ Recordings are stored as data URLs in `chrome.storage.local`, so they play insta
 Google speech is not available for every language (e.g. Tigrinya, Somali, Persian, Pashto, Kurdish). For those, a student or colleague can record the word once on the word editor page;
 the grey play button on a card links straight there. Note that the Google endpoints used are free but not officially documented.
 
+## Install
+
+Get PictoClass from the [Chrome Web Store](https://chromewebstore.google.com/detail/pictoclass/bgpfaofmiibihkppamdlhjelcfbacogi) (works in Chrome and Edge).
+
 ## Install for development
 
 1. Open `chrome://extensions` and switch on **Developer mode**.
