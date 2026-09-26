@@ -172,6 +172,213 @@ var PK = globalThis.PK || (function () {
     { code: 'vi', name: 'Vietnamees', gt: 'vi' }
   ];
 
+  const STR = {
+    nl: {
+      // cards
+      noSoundYet: ' – nog geen uitspraak', pickStudentLang: 'Kies de taal van je leerling', translating: 'Vertaling wordt opgezocht',
+      noTranslation: 'Geen vertaling gevonden', firstThen: 'Eerst {a}, dan {b}', language: 'Taal', lookingSound: 'Uitspraak wordt opgezocht…',
+      noVoiceFor: '{lang}: er is geen computerstem voor deze taal. ', recordSelf: '● Zelf opnemen', likePopup: 'Zoals de popup ({lang})',
+      allClassLangs: 'Alle klastalen', otherLang: 'Andere taal', cardIconTitle: 'Klik: per taal eerst de moedertaal, dan het {base}',
+      cardLangTitle: 'Kies welke taal deze kaart toont', smaller: 'Kleiner', bigger: 'Groter', remove: 'Weghalen', resizeTitle: 'Sleep om groter of kleiner te maken',
+      playTitle: 'Laat horen ({lang})',
+      // bubble
+      bubbleTitle: 'PictoClass: klik voor pictogrammen, sleep om te verplaatsen', sayPlaceholder: 'Typ een zin, bijvoorbeeld: Pak je schrift',
+      sayIt: 'Zeg het', showAgain: 'Opnieuw tonen en uitspreken', deleteSentence: 'Zin verwijderen', customise: 'Aanpassen',
+      customiseTitle: 'Kies je pictogrammen, talen en stem', done: 'Klaar', tapToToggle: 'Tik op een pictogram om het aan of uit te zetten.',
+      noneChosen: 'Nog geen pictogrammen gekozen. Klik op ✎ Aanpassen.', addLang: 'Taal toevoegen', plusLang: '+ taal', chooseLang: 'Kies een taal',
+      studentLangs: 'Talen van je leerlingen', removeLang: 'Taal weghalen', voice: 'Stem', voiceDefault: 'Standaard', voiceFemale: 'Vrouw', voiceMale: 'Man',
+      maleVoice: 'mannenstem', femaleVoice: 'vrouwenstem', noGenderVoice: 'Geen {kind} op deze computer voor: {list}. Daar klinkt de standaardstem (of je eigen opname).',
+      allGenderVoice: '✓ Voor al je talen is een {kind} beschikbaar.', improveWords: 'Woorden verbeteren →', allLangs: 'Alle talen', clearAll: 'Alles weg',
+      appLang: 'Taal van PictoClass', menuShowBubble: 'Bubbel tonen', menuClearAll: 'Alles weghalen',
+      optTitle: "PictoClass – woorden & talen",
+      optIntro: "Je hoeft niets voor te bereiden: kies op een kaart de taal van je leerling, dan zoekt PictoClass het woord en de uitspraak er zelf bij. Op deze pagina kun je de woorden en uitspraken controleren en verbeteren.",
+      waysTitle: "Zo roep je PictoClass op in de les",
+      way1t: "1. Vastpinnen",
+      way1: "Klik in Chrome rechtsboven op het <b>puzzelstukje</b> en dan op de <b>punaise</b> naast PictoClass. Het icoon staat daarna altijd in de werkbalk.",
+      way2t: "2. Rechtermuisknop",
+      way2: "Klik met rechts op een willekeurige pagina &rarr; <b>PictoClass</b> &rarr; kies meteen een pictogram.",
+      way3t: "3. De bubbel",
+      way3: "De <b>blauwe bubbel</b> staat op elke website. Klik erop voor je pictogrammen of om een zin te typen; met <b>✎ Aanpassen</b> kies je pictogrammen, talen en stem. Je kunt hem verslepen.",
+      way4t: "4. Sneltoetsen",
+      way4: "<b>Alt+Shift+P</b> menu · <b>Alt+Shift+O</b> bubbel · <b>Alt+Shift+X</b> alles weg",
+      pictograms: "Pictogrammen",
+      dotsLegend: "Stipjes: <b style=\"color:#16A34A\">groen</b> = woord + uitspraak, <b style=\"color:#60A5FA\">blauw</b> = alleen woord.",
+      saveShare: "Bewaren en delen",
+      exportAll: "Alles exporteren (.json)",
+      importDots: "Importeren…",
+      saveShareTip: "Handig om je woordenset met collega's te delen of naar een andere computer mee te nemen. De opnames zitten in het bestand.",
+      shortcutsTitle: "Sneltoetsen",
+      shortcutsText: "<b>Alt+Shift+P</b> opent PictoClass · <b>Alt+Shift+O</b> bubbel tonen · <b>Alt+Shift+X</b> haalt alle pictogrammen weg · op een pictogram: slepen = verplaatsen, hoekje rechtsonder of <b>Ctrl+scrollen</b> = groter/kleiner, klik op het plaatje = alle uitspraken afspelen. Aanpassen kan via",
+      wordIn: "woord in het {lang}",
+      translate: "Vertaal",
+      recordTitle: "Zelf opnemen (klik nog eens om te stoppen)",
+      play: "Afspelen",
+      clearSound: "Uitspraak wissen",
+      textOnPicto: "tekst op het pictogram",
+      showOnBoard: "Toon op bord",
+      stMic: "✓ eigen opname",
+      stVoice: "✓ uitspraak (computerstem)",
+      stSaved: "✓ uitspraak opgeslagen",
+      stNoVoice: "geen computerstem voor deze taal – neem het woord zelf op met ●",
+      stNotYet: "nog geen uitspraak (wordt opgezocht zodra het pictogram in beeld komt)",
+      stAuto: " · woord automatisch vertaald",
+      micDenied: "Geen toegang tot de microfoon. Sta de microfoon toe via het slotje of camera-icoon in de adresbalk en probeer het opnieuw.",
+      recEmpty: "De opname was leeg. Probeer het nog eens.",
+      recording: "Opnemen… zeg het woord en klik op ■ (stopt vanzelf na {s} seconden)",
+      nLangs: "{n} klastaal/-talen",
+      noLangsYet: "Nog geen talen: kies ze in de bubbel via ✎ Aanpassen, of op een kaart.",
+      optTip: "Woorden en uitspraak worden automatisch opgezocht. Klopt een woord niet? Typ het goede woord; de uitspraak wordt dan opnieuw opgezocht. Geen stem voor een taal, of klinkt het niet goed? Klik op ● en laat een leerling of collega het woord inspreken. Wat je zelf invult of opneemt, wordt nooit automatisch overschreven.",
+      exportFile: "pictoclass-woorden.json",
+      notAFile: "geen PictoClass-bestand",
+      imported: "✓ Geïmporteerd.",
+      importFailed: "Importeren mislukt: {err}",
+      version: "versie {v}",
+      clickToShow: "Klik = op het scherm",
+      showLang: "Toon taal:",
+      yourStudentsLang: "Taal van je leerlingen:",
+      chooseLangLower: "kies een taal",
+      all: "Alle",
+      popupTip: "Sneller: de blauwe <b>bubbel</b> op de pagina, of <b>rechtermuisknop</b> &rarr; <b>PictoClass</b>.",
+      bubble: "Bubbel",
+      bubbleBtnTitle: "PictoClass-bubbel op deze pagina (Alt+Shift+O)",
+      emptyBoard: "Leeg bord",
+      wordsLangs: "Woorden & talen",
+      failed: "Dat lukte niet: {err}",
+      unknownError: "onbekende fout",
+      popupNone: "Nog geen pictogrammen gekozen. Klik op de bubbel en dan op ✎ Aanpassen.",
+      boardHint: "Klik op de blauwe bubbel om een pictogram te kiezen · F11 = volledig scherm",
+      welcomeTitle: "Welkom bij PictoClass",
+      welcomeLead: "De blauwe bubbel staat vanaf nu op elke website die je opent. Daar begin je.",
+      step1: "Klik op de <b>blauwe bubbel</b>.",
+      step2: "Kies een pictogram, of typ een korte zin.",
+      step3: "Kies op de kaart de <b>taal van je leerling</b>. Het woord en de uitspraak komen er vanzelf bij.",
+      coachStart: "Dit is je <b>PictoClass-bubbel</b>. Klik erop om te beginnen. Je kunt hem ook verslepen.",
+      coachAgain: "Klik op de <b>bubbel</b> als je weer een pictogram of zin nodig hebt. Met <b>✎ Aanpassen</b> kies je je pictogrammen, talen en stem.",
+      coachPin: "Zet PictoClass vast: klik rechtsboven op het <b>puzzelstukje</b> (naast je profielfoto) en dan op de <b>punaise</b> naast PictoClass."
+    },
+    en: {
+      noSoundYet: ' – no pronunciation yet', pickStudentLang: "Choose your student's language", translating: 'Looking up the translation',
+      noTranslation: 'No translation found', firstThen: 'First {a}, then {b}', language: 'Language', lookingSound: 'Looking up the pronunciation…',
+      noVoiceFor: '{lang}: there is no computer voice for this language. ', recordSelf: '● Record it yourself', likePopup: 'As in the popup ({lang})',
+      allClassLangs: 'All class languages', otherLang: 'Other language', cardIconTitle: 'Click: for each language, first the home language, then {base}',
+      cardLangTitle: 'Choose which language this card shows', smaller: 'Smaller', bigger: 'Bigger', remove: 'Remove', resizeTitle: 'Drag to resize',
+      playTitle: 'Play ({lang})',
+      bubbleTitle: 'PictoClass: click for pictograms, drag to move', sayPlaceholder: 'Type a sentence, for example: Open your notebook',
+      sayIt: 'Say it', showAgain: 'Show and say again', deleteSentence: 'Delete sentence', customise: 'Customise',
+      customiseTitle: 'Choose your pictograms, languages and voice', done: 'Done', tapToToggle: 'Tap a pictogram to switch it on or off.',
+      noneChosen: 'No pictograms chosen yet. Click ✎ Customise.', addLang: 'Add a language', plusLang: '+ language', chooseLang: 'Choose a language',
+      studentLangs: "Your students' languages", removeLang: 'Remove language', voice: 'Voice', voiceDefault: 'Default', voiceFemale: 'Female', voiceMale: 'Male',
+      maleVoice: 'male voice', femaleVoice: 'female voice', noGenderVoice: 'No {kind} on this computer for: {list}. The default voice (or your own recording) is used there.',
+      allGenderVoice: '✓ A {kind} is available for all your languages.', improveWords: 'Improve words →', allLangs: 'All languages', clearAll: 'Clear all',
+      appLang: 'Language of PictoClass', menuShowBubble: 'Show the bubble', menuClearAll: 'Clear all',
+      optTitle: "PictoClass – words & languages",
+      optIntro: "No preparation needed: choose your student's language on a card and PictoClass looks up the word and the pronunciation by itself. On this page you can check and improve the words and pronunciations.",
+      waysTitle: "How to call up PictoClass in class",
+      way1t: "1. Pin it",
+      way1: "In Chrome, click the <b>puzzle piece</b> at the top right and then the <b>pin</b> next to PictoClass. The icon then stays on the toolbar.",
+      way2t: "2. Right-click",
+      way2: "Right-click any page &rarr; <b>PictoClass</b> &rarr; pick a pictogram straight away.",
+      way3t: "3. The bubble",
+      way3: "The <b>blue bubble</b> is on every website. Click it for your pictograms or to type a sentence; with <b>✎ Customise</b> you choose pictograms, languages and voice. You can drag it around.",
+      way4t: "4. Shortcuts",
+      way4: "<b>Alt+Shift+P</b> menu · <b>Alt+Shift+O</b> bubble · <b>Alt+Shift+X</b> clear all",
+      pictograms: "Pictograms",
+      dotsLegend: "Dots: <b style=\"color:#16A34A\">green</b> = word + pronunciation, <b style=\"color:#60A5FA\">blue</b> = word only.",
+      saveShare: "Save and share",
+      exportAll: "Export everything (.json)",
+      importDots: "Import…",
+      saveShareTip: "Handy for sharing your word set with colleagues or taking it to another computer. The recordings are in the file.",
+      shortcutsTitle: "Shortcuts",
+      shortcutsText: "<b>Alt+Shift+P</b> opens PictoClass · <b>Alt+Shift+O</b> shows the bubble · <b>Alt+Shift+X</b> removes all pictograms · on a pictogram: drag = move, bottom-right corner or <b>Ctrl+scroll</b> = bigger/smaller, click the picture = play all pronunciations. Change them at",
+      wordIn: "word in {lang}",
+      translate: "Translate",
+      recordTitle: "Record it yourself (click again to stop)",
+      play: "Play",
+      clearSound: "Delete pronunciation",
+      textOnPicto: "text on the pictogram",
+      showOnBoard: "Show on board",
+      stMic: "✓ own recording",
+      stVoice: "✓ pronunciation (computer voice)",
+      stSaved: "✓ pronunciation saved",
+      stNoVoice: "no computer voice for this language – record the word yourself with ●",
+      stNotYet: "no pronunciation yet (looked up as soon as the pictogram is shown)",
+      stAuto: " · word translated automatically",
+      micDenied: "No access to the microphone. Allow the microphone via the padlock or camera icon in the address bar and try again.",
+      recEmpty: "The recording was empty. Please try again.",
+      recording: "Recording… say the word and click ■ (stops by itself after {s} seconds)",
+      nLangs: "{n} class language(s)",
+      noLangsYet: "No languages yet: choose them in the bubble via ✎ Customise, or on a card.",
+      optTip: "Words and pronunciations are looked up automatically. Is a word wrong? Type the right word; the pronunciation is then looked up again. No voice for a language, or does it sound wrong? Click ● and let a student or colleague record the word. Whatever you type or record yourself is never overwritten automatically.",
+      exportFile: "pictoclass-words.json",
+      notAFile: "not a PictoClass file",
+      imported: "✓ Imported.",
+      importFailed: "Import failed: {err}",
+      version: "version {v}",
+      clickToShow: "Click = on screen",
+      showLang: "Show language:",
+      yourStudentsLang: "Your students' language:",
+      chooseLangLower: "choose a language",
+      all: "All",
+      popupTip: "Faster: the blue <b>bubble</b> on the page, or <b>right-click</b> &rarr; <b>PictoClass</b>.",
+      bubble: "Bubble",
+      bubbleBtnTitle: "PictoClass bubble on this page (Alt+Shift+O)",
+      emptyBoard: "Empty board",
+      wordsLangs: "Words & languages",
+      failed: "That didn't work: {err}",
+      unknownError: "unknown error",
+      popupNone: "No pictograms chosen yet. Click the bubble and then ✎ Customise.",
+      boardHint: "Click the blue bubble to choose a pictogram · F11 = full screen",
+      welcomeTitle: "Welcome to PictoClass",
+      welcomeLead: "From now on the blue bubble is on every website you open. That is where you start.",
+      step1: "Click the <b>blue bubble</b>.",
+      step2: "Choose a pictogram, or type a short sentence.",
+      step3: "Choose your <b>student's language</b> on the card. The word and the pronunciation are added by themselves.",
+      coachStart: "This is your <b>PictoClass bubble</b>. Click it to get started. You can also drag it around.",
+      coachAgain: "Click the <b>bubble</b> whenever you need a pictogram or sentence again. With <b>✎ Customise</b> you choose your pictograms, languages and voice.",
+      coachPin: "Pin PictoClass: click the <b>puzzle piece</b> at the top right (next to your profile picture) and then the <b>pin</b> next to PictoClass."
+    }
+  };
+
+  // ---------- Language of PictoClass: Dutch or English ----------
+  // One choice sets both the interface and the instruction language on the cards
+  // (home language | Dutch, or home language | English). Default follows the browser.
+  const LABEL_EN = {
+    luisteren: 'Listen', kijken: 'Look', stil: 'Be quiet', bord: 'Look at the board', praten: 'Talk', vraag: 'Ask a question',
+    vinger: 'Raise your hand', lezen: 'Read', schrijven: 'Write', doen: 'Do it', denken: 'Think', herhalen: 'Once more',
+    alleen: 'Work alone', tweetallen: 'Work in pairs', samenwerken: 'Work together', boek: 'Get your book', laptop: 'Laptop',
+    telefoon: 'Phone away', opruimen: 'Tidy up', wachten: 'Wait', stop: 'Stop', zitten: 'Sit down', pauze: 'Break', klaar: 'Done', goedzo: 'Well done!'
+  };
+  const NAME_EN = {
+    nl: 'Dutch', ar: 'Arabic', ti: 'Tigrinya', uk: 'Ukrainian', tr: 'Turkish', pl: 'Polish', fa: 'Persian (Farsi/Dari)', ps: 'Pashto', so: 'Somali',
+    ku: 'Kurdish', am: 'Amharic', ru: 'Russian', bg: 'Bulgarian', ro: 'Romanian', hu: 'Hungarian', lt: 'Lithuanian', el: 'Greek', sq: 'Albanian',
+    es: 'Spanish', pt: 'Portuguese', fr: 'French', en: 'English', de: 'German', it: 'Italian', zh: 'Chinese', hi: 'Hindi', ur: 'Urdu', vi: 'Vietnamese'
+  };
+  const BASES = ['nl', 'en'];
+  let current = null;
+  const browserBase = () => (String((globalThis.navigator && navigator.language) || '').toLowerCase().startsWith('nl') ? 'nl' : 'en');
+  // 'nl' | 'en' for the given settings (setting wins, otherwise the browser language)
+  const baseOf = settings => (settings && BASES.includes(settings.base) ? settings.base : browserBase());
+  const setBase = b => { current = BASES.includes(b) ? b : browserBase(); return current; };
+  const base = () => current || setBase(null);
+  // Card label in the current (or given) language
+  const label = (id, b) => { const p = PICTOS.find(x => x.id === id); if (!p) return ''; return (b || base()) === 'en' ? LABEL_EN[id] || p.label : p.label; };
+  // Language name in the current (or given) interface language
+  const langName = (code, b) => { const L = LANGS.find(x => x.code === code); if (!L) return code; return (b || base()) === 'en' ? NAME_EN[code] || L.name : L.name; };
+  // Interface text; {name} placeholders are filled from vars
+  const t = (key, vars) => {
+    const s = (STR[base()] && STR[base()][key]) || STR.nl[key] || key;
+    return vars ? s.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? vars[k] : m)) : s;
+  };
+
+  // Extension pages: fill elements marked data-t (trusted markup from STR), data-t-title and data-t-placeholder
+  const applyI18n = root => {
+    const r = root || document;
+    for (const e of r.querySelectorAll('[data-t]')) e.innerHTML = t(e.dataset.t);
+    for (const e of r.querySelectorAll('[data-t-title]')) e.title = t(e.dataset.tTitle);
+    for (const e of r.querySelectorAll('[data-t-placeholder]')) e.placeholder = t(e.dataset.tPlaceholder);
+    if (r === document) document.documentElement.lang = base();
+  };
+
   const NS = 'http://www.w3.org/2000/svg';
 
   function icon(id, doc) {
@@ -217,6 +424,6 @@ var PK = globalThis.PK || (function () {
     return Array.isArray(ids) ? PICTOS.filter(p => ids.includes(p.id)) : PICTOS;
   };
 
-  return { PICTOS, LANGS, icon, picto, lang, chosen };
+  return { PICTOS, LANGS, icon, picto, lang, chosen, STR, baseOf, setBase, base, label, langName, t, applyI18n };
 })();
 globalThis.PK = PK;

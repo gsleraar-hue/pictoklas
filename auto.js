@@ -48,24 +48,31 @@ async function translateLines(lines, sl, tl) {
   return out;
 }
 
+// Instruction language ('nl' or 'en') from the stored settings
+async function currentBase() {
+  const { settings = {} } = await chrome.storage.local.get('settings');
+  return PK.baseOf(settings);
+}
+
 // Fills in all missing words for one language in a single request
 const textJobs = new Map();
-function ensureTexts(code) {
-  if (code === 'nl') return Promise.resolve();
+function ensureTexts(code, base) {
+  if (code === base) return Promise.resolve();
   if (textJobs.has(code)) return textJobs.get(code);
   const job = (async () => {
     const L = PK.lang(code);
     if (!L) return;
     const { words = {} } = await chrome.storage.local.get('words');
-    const fromEn = [], fromNl = [];
+    // Source: the teacher's own text in the instruction language if there is one, otherwise the English gloss
+    const fromEn = [], fromOwn = [];
     for (const p of PK.PICTOS) {
       const w = words[p.id] || {};
       if (w[code] && w[code].text) continue;
-      const own = w.nl && w.nl.text;
-      (own ? fromNl : fromEn).push({ id: p.id, src: own || p.en });
+      const own = w[base] && w[base].text;
+      (own ? fromOwn : fromEn).push({ id: p.id, src: own || p.en });
     }
     const found = {};
-    for (const [list, sl] of [[fromEn, 'en'], [fromNl, 'nl']]) {
+    for (const [list, sl] of [[fromEn, 'en'], [fromOwn, base]]) {
       if (!list.length) continue;
       const res = await translateLines(list.map(x => x.src), sl, L.gt);
       // Drop a trailing full stop (such as '.' or Ethiopic '።'); '!' may stay
@@ -88,21 +95,24 @@ function ensureTexts(code) {
 
 const resolveJobs = new Map();
 
-// A typed sentence ("zin-…") is handled like a pictogram whose Dutch text is the sentence
+// A typed sentence ("zin-…") is handled like a pictogram whose text in the instruction language is the sentence
 async function phraseOf(id) {
   if (!/^zin-/.test(id)) return null;
-  const { words = {} } = await chrome.storage.local.get('words');
-  const text = words[id] && words[id].nl && words[id].nl.text;
-  return text ? { id, label: text, phrase: true } : null;
+  const { words = {}, phrases = [] } = await chrome.storage.local.get(['words', 'phrases']);
+  const w = words[id] || {};
+  const known = phrases.find(x => x.id === id);
+  const base = (known && known.base) || (w.nl && w.nl.text ? 'nl' : 'en');
+  const text = w[base] && w[base].text;
+  return text ? { id, label: text, phrase: true, base } : null;
 }
 
-// Translates a typed sentence from Dutch into one language (once)
+// Translates a typed sentence from its own language into one language (once)
 async function translatePhrase(p, code) {
   const L = PK.lang(code);
-  if (!L || code === 'nl') return;
+  if (!L || code === p.base) return;
   const { words = {} } = await chrome.storage.local.get('words');
   if (words[p.id] && words[p.id][code] && words[p.id][code].text) return;
-  const [t] = await translateLines([p.label], 'nl', L.gt);
+  const [t] = await translateLines([p.label], p.base, L.gt);
   if (!t) return;
   await mutateWords(ws => {
     ws[p.id] = ws[p.id] || {};
@@ -113,14 +123,16 @@ async function translatePhrase(p, code) {
 
 // Makes sure this pictogram (or sentence) has a word and, where possible, a spoken version for these languages
 async function resolvePicto(picto, codes) {
+  const base = await currentBase();
   const p = PK.picto(picto) || await phraseOf(picto);
   if (!p) return false;
-  codes = [...new Set(['nl', ...(codes || [])])].filter(c => PK.lang(c));
-  await Promise.all(codes.map(c => (p.phrase ? translatePhrase(p, c) : ensureTexts(c)).catch(() => {})));
+  const own = p.phrase ? p.base : base;
+  codes = [...new Set([own, ...(codes || [])])].filter(c => PK.lang(c));
+  await Promise.all(codes.map(c => (p.phrase ? translatePhrase(p, c) : ensureTexts(c, base)).catch(() => {})));
   for (const code of codes) {
     const key = picto + ':' + code;
     if (!resolveJobs.has(key)) {
-      resolveJobs.set(key, findRecording(p, code).catch(() => {}).finally(() => resolveJobs.delete(key)));
+      resolveJobs.set(key, findRecording(p, code, own).catch(() => {}).finally(() => resolveJobs.delete(key)));
     }
   }
   await Promise.all(codes.map(c => resolveJobs.get(picto + ':' + c)));
@@ -140,12 +152,12 @@ async function googleSpeech(text, code) {
 }
 
 // Order: the teacher's own recording (kept) -> Google speech (stored) -> (at playback) the computer voice
-async function findRecording(p, code) {
+async function findRecording(p, code, base) {
   const { words = {} } = await chrome.storage.local.get('words');
   const w = (words[p.id] && words[p.id][code]) || {};
   if (w.audio) return;
   if (w.soundTried && Date.now() - w.soundTried < 3 * DAY) return;
-  const text = code === 'nl' ? (p.phrase ? p.label : ((w.text) || p.label).toLowerCase()) : w.text;
+  const text = code === base ? (p.phrase ? p.label : ((w.text) || PK.label(p.id, base)).toLowerCase()) : w.text;
   if (!text) return;
   const audio = await googleSpeech(text, code).catch(() => null);
   if (!audio) {

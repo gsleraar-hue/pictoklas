@@ -23,17 +23,17 @@
 <body>
 <header>
   <h1>PictoClass <span id="ver" class="muted" style="font-size:11px;font-weight:400"></span></h1>
-  <span class="muted" style="font-size:12px">Klik = op het scherm</span>
+  <span class="muted" style="font-size:12px" data-t="clickToShow"></span>
 </header>
 <div class="langs" id="langs"></div>
 <div class="note" id="note"></div>
 <div class="grid" id="grid"></div>
-<div class="tip">Sneller: de blauwe <b>bubbel</b> op de pagina, of <b>rechtermuisknop</b> &rarr; <b>PictoClass</b>.</div>
+<div class="tip" data-t="popupTip"></div>
 <footer>
-  <button class="pill" id="dock" title="PictoClass-bubbel op deze pagina (Alt+Shift+O)">Bubbel</button>
-  <button class="pill" id="clear">Alles weg</button>
-  <button class="pill" id="bord">Leeg bord</button>
-  <button class="pill primary" id="beheer">Woorden &amp; talen</button>
+  <button class="pill" id="dock" data-t-title="bubbleBtnTitle" data-t="bubble"></button>
+  <button class="pill" id="clear" data-t="clearAll"></button>
+  <button class="pill" id="bord" data-t="emptyBoard"></button>
+  <button class="pill primary" id="beheer" data-t="wordsLangs"></button>
 </footer>
 <script src="picto.js"></script>
 <script src="popup.js"></script>

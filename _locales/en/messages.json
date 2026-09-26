@@ -1,0 +1,14 @@
+{
+  "extDescription": {
+    "message": "Large, movable pictograms for classes with newcomer students, with the word and pronunciation in their home language, automatically."
+  },
+  "cmdOpen": {
+    "message": "Open PictoClass"
+  },
+  "cmdDock": {
+    "message": "Show and open the PictoClass bubble"
+  },
+  "cmdClear": {
+    "message": "Remove all pictograms"
+  }
+}

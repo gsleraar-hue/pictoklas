@@ -54,42 +54,41 @@
 <body>
 <div class="wrap">
   <h1>PictoClass <span id="ver" class="muted" style="font-size:14px;font-weight:400"></span></h1>
-  <div class="muted">Je hoeft niets voor te bereiden: kies op een kaart de taal van je leerling, dan zoekt PictoClass het woord en de uitspraak er zelf bij. Op deze pagina kun je de woorden en uitspraken controleren en verbeteren.</div>
+  <div class="muted" data-t="optIntro"></div>
 
   <section class="start">
-    <h2>Zo roep je PictoClass op in de les</h2>
+    <h2 data-t="waysTitle"></h2>
     <div class="ways">
-      <div class="way"><b>1. Vastpinnen</b><span>Klik in Chrome rechtsboven op het <b>puzzelstukje</b> en dan op de <b>punaise</b> naast PictoClass. Het icoon staat daarna altijd in de werkbalk.</span></div>
-      <div class="way"><b>2. Rechtermuisknop</b><span>Klik met rechts op een willekeurige pagina &rarr; <b>PictoClass</b> &rarr; kies meteen een pictogram.</span></div>
-      <div class="way"><b>3. De bubbel</b><span>De <b>blauwe bubbel</b> staat op elke website. Klik erop voor je pictogrammen of om een zin te typen; met <b>✎ Aanpassen</b> kies je pictogrammen, talen en stem. Je kunt hem verslepen.</span></div>
-      <div class="way"><b>4. Sneltoetsen</b><span><b>Alt+Shift+P</b> menu · <b>Alt+Shift+O</b> bubbel · <b>Alt+Shift+X</b> alles weg</span></div>
+      <div class="way"><b data-t="way1t"></b><span data-t="way1"></span></div>
+      <div class="way"><b data-t="way2t"></b><span data-t="way2"></span></div>
+      <div class="way"><b data-t="way3t"></b><span data-t="way3"></span></div>
+      <div class="way"><b data-t="way4t"></b><span data-t="way4"></span></div>
     </div>
   </section>
 
   <section class="main">
     <div>
-      <h2>Pictogrammen</h2>
+      <h2 data-t="pictograms"></h2>
       <div class="grid" id="grid"></div>
-      <div class="muted" style="font-size:12px;margin-top:8px">Stipjes: <b style="color:#16A34A">groen</b> = woord + uitspraak, <b style="color:#60A5FA">blauw</b> = alleen woord.</div>
+      <div class="muted" style="font-size:12px;margin-top:8px" data-t="dotsLegend"></div>
     </div>
     <div class="detail" id="detail"></div>
   </section>
 
   <section>
-    <h2>Bewaren en delen</h2>
+    <h2 data-t="saveShare"></h2>
     <div class="row-actions">
-      <button class="pill" id="export">Alles exporteren (.json)</button>
-      <label class="pill" for="importFile">Importeren…</label>
+      <button class="pill" id="export" data-t="exportAll"></button>
+      <label class="pill" for="importFile" data-t="importDots"></label>
       <input type="file" id="importFile" accept=".json,application/json" hidden>
       <span class="muted" id="io" style="font-size:12px"></span>
     </div>
-    <div class="muted" style="font-size:12px;margin-top:8px">Handig om je woordenset met collega's te delen of naar een andere computer mee te nemen. De opnames zitten in het bestand.</div>
+    <div class="muted" style="font-size:12px;margin-top:8px" data-t="saveShareTip"></div>
   </section>
 
   <section>
-    <h2>Sneltoetsen</h2>
-    <div class="muted"><b>Alt+Shift+P</b> opent PictoClass · <b>Alt+Shift+O</b> bubbel tonen · <b>Alt+Shift+X</b> haalt alle pictogrammen weg · op een pictogram: slepen = verplaatsen, hoekje rechtsonder of <b>Ctrl+scrollen</b> = groter/kleiner, klik op het plaatje = alle uitspraken afspelen.
-    Aanpassen kan via <span class="link" id="shortcuts">chrome://extensions/shortcuts</span>.</div>
+    <h2 data-t="shortcutsTitle"></h2>
+    <div class="muted"><span data-t="shortcutsText"></span> <span class="link" id="shortcuts">chrome://extensions/shortcuts</span>.</div>
   </section>
 </div>
 <script src="picto.js"></script>

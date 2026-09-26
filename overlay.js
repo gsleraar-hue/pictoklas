@@ -168,13 +168,15 @@
   };
   const PLAY = 'M7 4.5v15l13-7.5z';
 
-  const labelOf = id => (words[id] && words[id].nl && words[id].nl.text) || (PK.picto(id) || {}).label || '';
+  // The instruction language shown next to the home language: 'nl' (Dutch) or 'en' (English)
+  const B = () => PK.base();
+  const labelOf = id => (words[id] && words[id][B()] && words[id][B()].text) || PK.label(id) || '';
   // Typed sentences ("zin-…") behave like pictograms, with the speech-bubble icon
   const isPhrase = id => /^zin-/.test(id);
   const PHRASE_COLOR = '#EA580C';
   const pic = id => PK.picto(id) || (isPhrase(id) ? { id, label: labelOf(id), color: PHRASE_COLOR, iconId: 'praten', phrase: true } : null);
   let phrases = []; // recent sentences [{ id, text }]
-  const textOf = (id, code) => code === 'nl' ? labelOf(id) : ((words[id] && words[id][code] && words[id][code].text) || '');
+  const textOf = (id, code) => code === B() ? labelOf(id) : ((words[id] && words[id][code] && words[id][code].text) || '');
   const hasAudio = (id, code) => !!(words[id] && words[id][code] && words[id][code].audio);
   // Computer voices (chrome.tts) for when there is no recording
   let voices = [];
@@ -185,8 +187,8 @@
   // Which languages this card shows: the card's own choice > the choice in the popup/bubble > all class languages
   function langsOf(card) {
     const pick = card.dataset.lang || settings.focus;
-    if (pick && PK.lang(pick)) return [pick];
-    return settings.langs || [];
+    if (pick && PK.lang(pick) && pick !== B()) return [pick];
+    return (settings.langs || []).filter(c => c !== B());
   }
 
   function fillCard(card) {
@@ -203,12 +205,12 @@
       const ok = cls === 'pair' ? seq.every(c => canSound(id, c)) : seq.some(c => canSound(id, c));
       b.className = (cls || 'play') + (ok ? '' : ' off');
       b.style.background = color;
-      b.title = ok ? title : title + ' – nog geen uitspraak';
+      b.title = ok ? title : title + PK.t('noSoundYet');
       for (let i = 0; i < (cls === 'pair' ? 2 : 1); i++) b.appendChild(svgEl(PLAY));
       b.addEventListener('click', e => { e.stopPropagation(); ok ? play(id, seq, b) : hint(card, seq); });
       return b;
     };
-    head.appendChild(playBtn(['nl'], 'Nederlands', '#111827', 'play big'));
+    head.appendChild(playBtn([B()], PK.langName(B()), '#111827', 'play big'));
 
     const langs = langsOf(card);
     const box = card.querySelector('.langs');
@@ -230,7 +232,7 @@
     if (!langs.length) {
       const pick = document.createElement('button');
       pick.className = 'pick';
-      pick.textContent = 'Kies de taal van je leerling';
+      pick.textContent = PK.t('pickStudentLang');
       pick.appendChild(chevron());
       pick.addEventListener('pointerdown', e => e.stopPropagation());
       pick.addEventListener('click', e => { e.stopPropagation(); langMenu(card); });
@@ -246,25 +248,25 @@
       const txt = textOf(id, code);
       t.className = 'word' + (txt ? '' : ' none');
       t.textContent = txt || (card._busy ? '…' : '—');
-      if (!txt) t.title = card._busy ? 'Vertaling wordt opgezocht' : 'Geen vertaling gevonden';
+      if (!txt) t.title = card._busy ? PK.t('translating') : PK.t('noTranslation');
       if (L.rtl) t.dir = 'rtl';
       const own = half('half', code, t);
-      own.appendChild(playBtn([code], L.name, p.color));
+      own.appendChild(playBtn([code], PK.langName(code), p.color));
 
       const n = document.createElement('span');
       n.className = 'word';
       n.textContent = isPhrase(id) ? labelOf(id) : labelOf(id).toLowerCase();
-      const nl = half('half nlh', 'nl', n);
-      // Sentences are stacked: the Dutch line gets its own ▶ so both ▶ buttons line up in one column
-      if (isPhrase(id)) nl.appendChild(playBtn(['nl'], 'Nederlands', '#111827'));
+      const nl = half('half nlh', B(), n);
+      // Sentences are stacked: the instruction-language line gets its own ▶ so both ▶ buttons line up in one column
+      if (isPhrase(id)) nl.appendChild(playBtn([B()], PK.langName(B()), '#111827'));
 
-      row.append(own, nl, playBtn([code, 'nl'], 'Eerst ' + L.name + ', dan Nederlands', '#111827', 'pair'));
+      row.append(own, nl, playBtn([code, B()], PK.t('firstThen', { a: PK.langName(code), b: PK.langName(B()) }), '#111827', 'pair'));
       box.appendChild(row);
     }
     const lb = card.querySelector('.langbtn');
     if (lb) {
       const cur = card.dataset.lang || settings.focus;
-      lb.textContent = cur ? cur.toUpperCase() : 'Taal';
+      lb.textContent = cur ? cur.toUpperCase() : PK.t('language');
       lb.appendChild(chevron());
     }
     fitWords(card);
@@ -307,14 +309,14 @@
       card.appendChild(h);
     }
     h.textContent = '';
-    const code = (seq || []).find(c => !canSound(card.dataset.id, c)) || 'nl';
+    const code = (seq || []).find(c => !canSound(card.dataset.id, c)) || B();
     if (card._busy) {
-      h.textContent = 'Uitspraak wordt opgezocht…';
+      h.textContent = PK.t('lookingSound');
     } else {
-      h.append((PK.lang(code) || {}).name + ': er is geen computerstem voor deze taal. ');
+      h.append(PK.t('noVoiceFor', { lang: PK.langName(code) }));
       const go = document.createElement('button');
       go.className = 'hintbtn';
-      go.textContent = '● Zelf opnemen';
+      go.textContent = PK.t('recordSelf');
       go.addEventListener('click', e => { e.stopPropagation(); chrome.runtime.sendMessage({ type: 'options', picto: card.dataset.id, lang: code }).catch(() => {}); h.remove(); });
       h.appendChild(go);
     }
@@ -326,8 +328,8 @@
   function sequence(card) {
     const id = card.dataset.id;
     const seq = [];
-    for (const code of langsOf(card)) if (canSound(id, code)) seq.push(code, 'nl');
-    return seq.length ? seq : ['nl'];
+    for (const code of langsOf(card)) if (canSound(id, code)) seq.push(code, B());
+    return seq.length ? seq : [B()];
   }
 
   // Language choice per card, during the lesson. No class languages yet? Then the choice becomes a class language.
@@ -336,7 +338,7 @@
     if (old) { old.remove(); card.classList.remove('menu-open'); return; }
     const menu = document.createElement('div');
     menu.className = 'menu';
-    const klas = (settings.langs || []).filter(c => PK.lang(c));
+    const klas = (settings.langs || []).filter(c => PK.lang(c) && c !== B());
     const close = () => { menu.remove(); card.classList.remove('menu-open'); };
     const opt = (value, text) => {
       const b = document.createElement('button');
@@ -358,11 +360,11 @@
     const head = txt => { const h = document.createElement('div'); h.className = 'mh'; h.textContent = txt; menu.appendChild(h); };
     if (klas.length) {
       const f = settings.focus && PK.lang(settings.focus);
-      opt('', f ? 'Zoals de popup (' + f.name + ')' : 'Alle klastalen');
-      for (const c of klas) opt(c, PK.lang(c).name);
-      head('Andere taal');
+      opt('', f ? PK.t('likePopup', { lang: PK.langName(f.code) }) : PK.t('allClassLangs'));
+      for (const c of klas) opt(c, PK.langName(c));
+      head(PK.t('otherLang'));
     }
-    for (const L of PK.LANGS) if (L.code !== 'nl' && !klas.includes(L.code)) opt(L.code, L.name);
+    for (const L of PK.LANGS) if (L.code !== B() && !klas.includes(L.code)) opt(L.code, PK.langName(L.code));
     card.appendChild(menu);
     card.classList.add('menu-open');
   }
@@ -440,7 +442,7 @@
     const icon = document.createElement('div');
     icon.className = 'icon';
     icon.style.background = p.color;
-    icon.title = 'Klik: per taal eerst de moedertaal, dan het Nederlands';
+    icon.title = PK.t('cardIconTitle', { base: PK.langName(B()) });
     icon.appendChild(PK.icon(p.iconId || id));
     if (p.phrase) card.classList.add('phrase');
 
@@ -460,14 +462,14 @@
       b.addEventListener('pointerdown', e => e.stopPropagation());
       bar.appendChild(b);
     };
-    mk('Taal', 'Kies welke taal deze kaart toont', () => langMenu(card), 'langbtn');
-    mk('−', 'Kleiner', () => setSize(card, card.offsetWidth / 1.2));
-    mk('+', 'Groter', () => { setSize(card, card.offsetWidth * 1.2); keepInView(card); });
-    mk('×', 'Weghalen', () => remove(id));
+    mk(PK.t('language'), PK.t('cardLangTitle'), () => langMenu(card), 'langbtn');
+    mk('−', PK.t('smaller'), () => setSize(card, card.offsetWidth / 1.2));
+    mk('+', PK.t('bigger'), () => { setSize(card, card.offsetWidth * 1.2); keepInView(card); });
+    mk('×', PK.t('remove'), () => remove(id));
 
     const grip = document.createElement('div');
     grip.className = 'grip';
-    grip.title = 'Sleep om groter of kleiner te maken';
+    grip.title = PK.t('resizeTitle');
 
     card.append(icon, nl, langs, bar, grip);
     card.addEventListener('pointerdown', e => {
@@ -610,7 +612,7 @@
     if (!bubble) {
       bubble = document.createElement('button');
       bubble.className = 'bubble';
-      bubble.title = 'PictoClass: klik voor pictogrammen, sleep om te verplaatsen';
+      bubble.title = PK.t('bubbleTitle');
       bubble.appendChild(PK.icon('bord'));
       bpanel = document.createElement('div');
       bpanel.className = 'bpanel';
@@ -707,7 +709,7 @@
   let coverage = null; // per language: is there a male / female voice on this computer?
 
   function askCoverage() {
-    const codes = ['nl', ...(settings.langs || [])];
+    const codes = [B(), ...(settings.langs || []).filter(c => c !== B())];
     chrome.runtime.sendMessage({ type: 'gender-coverage', langs: codes }).then(r => { coverage = (r && r.result) || null; if (editing) fillDock(); }).catch(() => {});
   }
 
@@ -726,12 +728,12 @@
     const input = el('input');
     input.type = 'text';
     input.maxLength = 150;
-    input.placeholder = 'Typ een zin, bijvoorbeeld: Pak je schrift';
+    input.placeholder = PK.t('sayPlaceholder');
     // Keys typed here must not reach the page (e.g. space or arrows would move a presentation on)
     for (const t of ['keydown', 'keyup', 'keypress']) input.addEventListener(t, e => { e.stopPropagation(); if (t === 'keydown' && e.key === 'Escape') setPanel(false); });
     const go = el('button', 'saybtn');
     go.type = 'submit';
-    go.append(PK.icon('praten'), el('span', null, 'Zeg het'));
+    go.append(PK.icon('praten'), el('span', null, PK.t('sayIt')));
     form.append(input, go);
     form.addEventListener('submit', async e => {
       e.preventDefault();
@@ -742,7 +744,7 @@
       const id = r && r.result;
       if (!id) return;
       words[id] = words[id] || {};
-      words[id].nl = Object.assign({}, words[id].nl, { text });
+      words[id][B()] = Object.assign({}, words[id][B()], { text });
       show(id, { speak: true });
     });
     box.appendChild(form);
@@ -751,10 +753,10 @@
       for (const ph of phrases) {
         const chip = el('span', 'rchip');
         const c = el('button', 'rtext', ph.text);
-        c.title = 'Opnieuw tonen en uitspreken';
+        c.title = PK.t('showAgain');
         c.addEventListener('click', () => show(ph.id, { speak: true }));
         const x = el('button', 'rdel', '×');
-        x.title = 'Zin verwijderen';
+        x.title = PK.t('deleteSentence');
         x.addEventListener('click', () => {
           remove(ph.id); // also take its card off the screen
           chrome.runtime.sendMessage({ type: 'phrase-remove', id: ph.id }).catch(() => {});
@@ -773,16 +775,16 @@
     bpanel.classList.toggle('editing', editing);
 
     const top = el('div', 'docktop');
-    const t = el('b', null, editing ? 'Aanpassen' : 'PictoClass');
+    const t = el('b', null, editing ? PK.t('customise') : 'PictoClass');
     t.appendChild(el('span', 'ver', ' ' + chrome.runtime.getManifest().version));
     const acts = el('span', 'dockacts');
     if (editing) {
-      const done = el('button', 'dockbtn2', 'Klaar');
+      const done = el('button', 'dockbtn2', PK.t('done'));
       done.addEventListener('click', () => setEditing(false));
       acts.append(done);
     } else {
-      const edit = el('button', 'dockx', '✎ Aanpassen');
-      edit.title = 'Kies je pictogrammen, talen en stem';
+      const edit = el('button', 'dockx', '✎ ' + PK.t('customise'));
+      edit.title = PK.t('customiseTitle');
       edit.addEventListener('click', () => setEditing(true));
       // No "hide" option on purpose: without the bubble a teacher could get stuck on the page
       acts.append(edit);
@@ -793,8 +795,8 @@
     if (!editing) bpanel.appendChild(sayBox());
 
     const chosen = new Set(PK.chosen(settings).map(p => p.id));
-    if (editing) bpanel.appendChild(el('div', 'hintline', 'Tik op een pictogram om het aan of uit te zetten.'));
-    else if (!chosen.size) bpanel.appendChild(el('div', 'none', 'Nog geen pictogrammen gekozen. Klik op ✎ Aanpassen.'));
+    if (editing) bpanel.appendChild(el('div', 'hintline', PK.t('tapToToggle')));
+    else if (!chosen.size) bpanel.appendChild(el('div', 'none', PK.t('noneChosen')));
 
     const grid = el('div', 'dockgrid');
     for (const p of editing ? PK.PICTOS : PK.PICTOS.filter(x => chosen.has(x.id))) {
@@ -818,19 +820,19 @@
     }
     bpanel.appendChild(grid);
 
-    const langs = (settings.langs || []).filter(c => PK.lang(c));
+    const langs = (settings.langs || []).filter(c => PK.lang(c) && c !== B());
     const foot = el('div', 'dockfoot');
     const add = el('select', 'chip');
-    add.title = 'Taal toevoegen';
-    add.appendChild(new Option(langs.length ? '+ taal' : 'Kies een taal', ''));
-    for (const L of PK.LANGS) if (L.code !== 'nl' && !langs.includes(L.code)) add.appendChild(new Option(L.name, L.code));
+    add.title = PK.t('addLang');
+    add.appendChild(new Option(langs.length ? PK.t('plusLang') : PK.t('chooseLang'), ''));
+    for (const L of PK.LANGS) if (L.code !== B() && !langs.includes(L.code)) add.appendChild(new Option(PK.langName(L.code), L.code));
     add.addEventListener('change', () => { if (add.value) saveSettings({ langs: [...langs, add.value] }); });
 
     if (editing) {
-      foot.appendChild(el('div', 'flabel', 'Talen van je leerlingen'));
+      foot.appendChild(el('div', 'flabel', PK.t('studentLangs')));
       for (const c of langs) {
-        const chip = el('button', 'chip', PK.lang(c).name + '  ×');
-        chip.title = 'Taal weghalen';
+        const chip = el('button', 'chip', PK.langName(c) + '  ×');
+        chip.title = PK.t('removeLang');
         chip.addEventListener('click', () => {
           const patch = { langs: langs.filter(x => x !== c) };
           if (settings.focus === c) patch.focus = undefined;
@@ -842,35 +844,45 @@
 
       // Voice: default / female / male. Tell honestly which languages have no voice of that kind here.
       const vrow = el('div', 'voicerow');
-      vrow.appendChild(el('span', 'flabel inline', 'Stem'));
+      vrow.appendChild(el('span', 'flabel inline', PK.t('voice')));
       const cur = settings.voiceGender || '';
-      for (const [val, name] of [['', 'Standaard'], ['female', 'Vrouw'], ['male', 'Man']]) {
+      for (const [val, name] of [['', PK.t('voiceDefault')], ['female', PK.t('voiceFemale')], ['male', PK.t('voiceMale')]]) {
         const b = el('button', 'chip' + (cur === val ? ' on' : ''), name);
         b.addEventListener('click', () => saveSettings({ voiceGender: val || undefined }));
         vrow.appendChild(b);
       }
+      // Language of PictoClass: interface + instruction language on the cards
+      const lrow = el('div', 'voicerow');
+      lrow.appendChild(el('span', 'flabel inline', PK.t('appLang')));
+      for (const [val, name] of [['nl', 'Nederlands'], ['en', 'English']]) {
+        const b = el('button', 'chip' + (B() === val ? ' on' : ''), name);
+        b.addEventListener('click', () => saveSettings({ base: val }));
+        lrow.appendChild(b);
+      }
       bpanel.append(foot, vrow);
       if (cur && coverage) {
-        const missing = Object.keys(coverage).filter(c => !coverage[c][cur]).map(c => (PK.lang(c) || {}).name).filter(Boolean);
+        const kind = cur === 'male' ? PK.t('maleVoice') : PK.t('femaleVoice');
+        const missing = Object.keys(coverage).filter(c => !coverage[c][cur]).map(c => PK.langName(c));
         bpanel.appendChild(el('div', 'hintline small', missing.length
-          ? 'Geen ' + (cur === 'male' ? 'mannenstem' : 'vrouwenstem') + ' op deze computer voor: ' + missing.join(', ') + '. Daar klinkt de standaardstem (of je eigen opname).'
-          : '✓ Voor al je talen is een ' + (cur === 'male' ? 'mannenstem' : 'vrouwenstem') + ' beschikbaar.'));
+          ? PK.t('noGenderVoice', { kind, list: missing.join(', ') })
+          : PK.t('allGenderVoice', { kind })));
       }
-      const more = el('button', 'dockx', 'Woorden verbeteren →');
+      bpanel.appendChild(lrow);
+      const more = el('button', 'dockx', PK.t('improveWords'));
       more.addEventListener('click', () => chrome.runtime.sendMessage({ type: 'options' }).catch(() => {}));
       const bottom = el('div', 'editbottom');
       bottom.append(more);
       bpanel.append(bottom);
     } else {
       if (langs.length) {
-        for (const [code, name] of [['', 'Alle talen'], ...langs.map(c => [c, PK.lang(c).name])]) {
+        for (const [code, name] of [['', PK.t('allLangs')], ...langs.map(c => [c, PK.langName(c)])]) {
           const b = el('button', 'chip' + ((settings.focus || '') === code ? ' on' : ''), name);
           b.addEventListener('click', () => saveSettings({ focus: code || undefined }));
           foot.appendChild(b);
         }
       }
       foot.appendChild(add);
-      const cl = el('button', 'chip clear', 'Alles weg');
+      const cl = el('button', 'chip clear', PK.t('clearAll'));
       cl.addEventListener('click', clear);
       foot.appendChild(cl);
       bpanel.appendChild(foot);
@@ -882,13 +894,25 @@
     words = d.words || {};
     phrases = d.phrases || [];
     settings = Object.assign({ langs: [] }, d.settings);
+    PK.setBase(PK.baseOf(settings));
     cards.forEach(fillCard);
     dock(); // the bubble appears as soon as PictoClass is active on the page
+    if (bubble) bubble.title = PK.t('bubbleTitle');
   });
   chrome.storage.onChanged.addListener((ch, area) => {
     if (area !== 'local') return;
     if (ch.words) words = ch.words.newValue || {};
-    if (ch.settings) settings = Object.assign({ langs: [] }, ch.settings.newValue);
+    if (ch.settings) {
+      settings = Object.assign({ langs: [] }, ch.settings.newValue);
+      const before = PK.base();
+      PK.setBase(PK.baseOf(settings));
+      if (before !== PK.base()) {
+        // Other language: rebuild the cards (their bar texts too) and look words up again
+        for (const [id, c] of [...cards]) { const x = c.style.left, y = c.style.top, w = c.offsetWidth; c.remove(); cards.delete(id); show(id); const nc = cards.get(id); if (nc) { nc.style.left = x; nc.style.top = y; setSize(nc, w); } }
+        if (bubble) bubble.title = PK.t('bubbleTitle');
+        if (editing) askCoverage();
+      }
+    }
     if (ch.phrases) { phrases = ch.phrases.newValue || []; if (!editing) fillDock(); }
     if (ch.words || ch.settings) {
       cards.forEach(fillCard);

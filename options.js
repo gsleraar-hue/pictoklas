@@ -16,6 +16,17 @@ async function load() {
   const d = await chrome.storage.local.get(['words', 'settings']);
   words = d.words || {};
   settings = Object.assign({ langs: [] }, d.settings);
+  applyBase();
+}
+
+// Language of PictoClass: interface texts and the instruction language (first row, text on the pictogram)
+let B = PK.base();
+function applyBase() {
+  B = PK.setBase(PK.baseOf(settings));
+  settings.langs = settings.langs.filter(c => c !== B);
+  PK.applyI18n();
+  document.title = PK.t('optTitle');
+  $('ver').textContent = PK.t('version', { v: chrome.runtime.getManifest().version });
 }
 
 // Always read-modify-write, so a spoken version that just came in is not overwritten
@@ -40,14 +51,14 @@ function renderGrid() {
   for (const p of PK.PICTOS) {
     const ic = el('div', { className: 'ic' }, PK.icon(p.id));
     ic.style.background = p.color;
-    const nlText = words[p.id] && words[p.id].nl && words[p.id].nl.text;
+    const own = words[p.id] && words[p.id][B] && words[p.id][B].text;
     const dots = el('div', { className: 'dots' });
-    for (const code of ['nl', ...settings.langs]) {
+    for (const code of [B, ...settings.langs]) {
       const w = words[p.id] && words[p.id][code];
-      dots.append(el('i', { className: w && w.audio ? 'a' : (w && w.text && code !== 'nl') ? 'w' : '' }));
+      dots.append(el('i', { className: w && w.audio ? 'a' : (w && w.text && code !== B) ? 'w' : '' }));
     }
-    const b = el('button', { className: 'tile' + (p.id === selected ? ' sel' : ''), title: p.label },
-      ic, el('div', { className: 'lb', textContent: nlText || p.label }), dots);
+    const b = el('button', { className: 'tile' + (p.id === selected ? ' sel' : ''), title: PK.label(p.id) },
+      ic, el('div', { className: 'lb', textContent: own || PK.label(p.id) }), dots);
     b.onclick = () => { selected = p.id; renderGrid(); renderDetail(); };
     box.append(b);
   }
@@ -62,48 +73,49 @@ function playSrc(src) {
 
 function langRow(p, code) {
   const L = PK.lang(code);
+  const name = PK.langName(code);
   const w = (words[p.id] && words[p.id][code]) || {};
-  const isNl = code === 'nl';
+  const isBase = code === B;
+  const def = PK.label(p.id);
 
-  const input = el('input', { type: 'text', value: isNl ? (w.text || p.label) : (w.text || ''), placeholder: isNl ? p.label : 'woord in het ' + L.name });
+  const input = el('input', { type: 'text', value: isBase ? (w.text || def) : (w.text || ''), placeholder: isBase ? def : PK.t('wordIn', { lang: name }) });
   input.dir = 'auto';
   input.oninput = () => {
     const v = input.value.trim();
     updateWord(p.id, code, e => {
-      e.text = isNl && v === p.label ? '' : v;
+      e.text = isBase && v === def ? '' : v;
       delete e.auto; delete e.soundTried;
       // An automatically found pronunciation belonged to the old word: look it up again
       if (e.autoAudio) { delete e.audio; delete e.src; delete e.autoAudio; }
     });
   };
   const st = el('span', { className: 'st' + (w.audio ? ' ok' : '') });
-  st.textContent = (w.audio ? (w.src === 'mic' ? '✓ eigen opname' : w.autoAudio ? '✓ uitspraak (computerstem)' : '✓ uitspraak opgeslagen')
-    : w.soundTried ? 'geen computerstem voor deze taal – neem het woord zelf op met ●' : 'nog geen uitspraak (wordt opgezocht zodra het pictogram in beeld komt)')
-    + (w.auto ? ' · woord automatisch vertaald' : '');
+  st.textContent = PK.t(w.audio ? (w.src === 'mic' ? 'stMic' : w.autoAudio ? 'stVoice' : 'stSaved') : w.soundTried ? 'stNoVoice' : 'stNotYet')
+    + (w.auto ? PK.t('stAuto') : '');
 
   const act = el('td', { className: 'act' });
-  if (!isNl) {
-    const gt = el('a', { className: 'link', textContent: 'Vertaal', title: 'Open Google Translate', href: '#' });
+  if (!isBase) {
+    const gt = el('a', { className: 'link', textContent: PK.t('translate'), title: 'Open Google Translate', href: '#' });
     gt.onclick = e => {
       e.preventDefault();
-      const nlWord = (words[p.id] && words[p.id].nl && words[p.id].nl.text) || p.label;
-      chrome.tabs.create({ url: 'https://translate.google.com/?sl=nl&tl=' + L.gt + '&text=' + encodeURIComponent(nlWord.toLowerCase()) + '&op=translate' });
+      const baseWord = (words[p.id] && words[p.id][B] && words[p.id][B].text) || def;
+      chrome.tabs.create({ url: 'https://translate.google.com/?sl=' + B + '&tl=' + L.gt + '&text=' + encodeURIComponent(baseWord.toLowerCase()) + '&op=translate' });
     };
     act.append(gt);
   }
-  const recBtn = el('button', { className: 'icon-btn rec', title: 'Zelf opnemen (klik nog eens om te stoppen)', textContent: '●' });
+  const recBtn = el('button', { className: 'icon-btn rec', title: PK.t('recordTitle'), textContent: '●' });
   recBtn.onclick = () => toggleRecording(p, code, recBtn, st);
   act.append(recBtn);
   if (w.audio) {
-    const pl = el('button', { className: 'icon-btn play', title: 'Afspelen', textContent: '▶' });
+    const pl = el('button', { className: 'icon-btn play', title: PK.t('play'), textContent: '▶' });
     pl.onclick = () => playSrc(w.audio);
-    const del = el('button', { className: 'icon-btn del', title: 'Uitspraak wissen', textContent: '×' });
+    const del = el('button', { className: 'icon-btn del', title: PK.t('clearSound'), textContent: '×' });
     del.onclick = () => updateWord(p.id, code, e => { delete e.audio; delete e.src; delete e.autoAudio; e.soundTried = Date.now(); });
     act.append(pl, del);
   }
 
   const tr = el('tr', null,
-    el('td', { className: 'name' }, L.name, isNl ? el('small', { textContent: 'tekst op het pictogram' }) : null),
+    el('td', { className: 'name' }, name, isBase ? el('small', { textContent: PK.t('textOnPicto') }) : null),
     el('td', { className: 'word' }, input, st),
     act);
   tr.dataset.code = code;
@@ -123,7 +135,7 @@ async function toggleRecording(p, code, btn, st) {
   } catch (e) {
     st.className = 'st';
     st.style.color = '#DC2626';
-    st.textContent = 'Geen toegang tot de microfoon. Sta de microfoon toe via het slotje of camera-icoon in de adresbalk en probeer het opnieuw.';
+    st.textContent = PK.t('micDenied');
     return;
   }
   const type = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus'].find(t => window.MediaRecorder && MediaRecorder.isTypeSupported(t)) || '';
@@ -138,7 +150,7 @@ async function toggleRecording(p, code, btn, st) {
     btn.textContent = '●';
     if (rec && rec.mr === mr) rec = null;
     const blob = new Blob(chunks, { type: mr.mimeType || 'audio/webm' });
-    if (blob.size < 800) { st.textContent = 'De opname was leeg. Probeer het nog eens.'; return; }
+    if (blob.size < 800) { st.textContent = PK.t('recEmpty'); return; }
     const fr = new FileReader();
     fr.onload = () => updateWord(p.id, code, e => {
       Object.assign(e, { audio: fr.result, src: 'mic', saved: Date.now() });
@@ -153,7 +165,7 @@ async function toggleRecording(p, code, btn, st) {
   btn.textContent = '■';
   st.className = 'st';
   st.style.color = '#DC2626';
-  st.textContent = 'Opnemen… zeg het woord en klik op ■ (stopt vanzelf na ' + MAX_REC_MS / 1000 + ' seconden)';
+  st.textContent = PK.t('recording', { s: MAX_REC_MS / 1000 });
 }
 
 function renderDetail() {
@@ -162,11 +174,11 @@ function renderDetail() {
   box.textContent = '';
   const big = el('div', { className: 'big' }, PK.icon(p.id));
   big.style.background = p.color;
-  const show = el('button', { className: 'pill primary', textContent: 'Toon op bord' });
+  const show = el('button', { className: 'pill primary', textContent: PK.t('showOnBoard') });
   show.onclick = () => chrome.tabs.create({ url: 'bord.html?show=' + p.id });
   box.append(el('div', { className: 'head' }, big,
-    el('div', { style: 'flex:1' }, el('h2', { textContent: p.label, style: 'margin:0 0 2px;font-size:20px' }),
-      el('div', { className: 'muted', textContent: settings.langs.length ? settings.langs.length + ' klastaal/-talen' : 'Nog geen talen: kies ze in de bubbel via ✎ Aanpassen, of op een kaart.' })),
+    el('div', { style: 'flex:1' }, el('h2', { textContent: PK.label(p.id), style: 'margin:0 0 2px;font-size:20px' }),
+      el('div', { className: 'muted', textContent: settings.langs.length ? PK.t('nLangs', { n: settings.langs.length }) : PK.t('noLangsYet') })),
     show));
 
   // Look up missing words/pronunciations right away (once per pictogram + languages)
@@ -177,17 +189,16 @@ function renderDetail() {
   }
 
   const table = el('table');
-  for (const code of ['nl', ...settings.langs]) table.append(langRow(p, code));
+  for (const code of [B, ...settings.langs]) table.append(langRow(p, code));
   box.append(table);
-  box.append(el('div', { className: 'tip' },
-    'Woorden en uitspraak worden automatisch opgezocht. Klopt een woord niet? Typ het goede woord; de uitspraak wordt dan opnieuw opgezocht. Geen stem voor een taal, of klinkt het niet goed? Klik op ● en laat een leerling of collega het woord inspreken. Wat je zelf invult of opneemt, wordt nooit automatisch overschreven.'));
+  box.append(el('div', { className: 'tip' }, PK.t('optTip')));
 }
 
 // ---------- Export / import ----------
 $('export').onclick = async () => {
   const d = await chrome.storage.local.get(['words', 'settings']);
   const blob = new Blob([JSON.stringify({ app: 'pictoklas', version: 1, ...d }, null, 1)], { type: 'application/json' });
-  const a = el('a', { href: URL.createObjectURL(blob), download: 'pictoclass-woorden.json' });
+  const a = el('a', { href: URL.createObjectURL(blob), download: PK.t('exportFile') });
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 5000);
 };
@@ -196,7 +207,7 @@ $('importFile').onchange = async e => {
   if (!f) return;
   try {
     const d = JSON.parse(await f.text());
-    if (!['pictoklas', 'pictoclass'].includes(d.app) || typeof d.words !== 'object') throw new Error('geen PictoClass-bestand');
+    if (!['pictoklas', 'pictoclass'].includes(d.app) || typeof d.words !== 'object') throw new Error(PK.t('notAFile'));
     // Merge: imported words win, own words that aren't in the file are kept
     for (const id in d.words) {
       if (!PK.picto(id)) continue;
@@ -205,10 +216,10 @@ $('importFile').onchange = async e => {
     const langs = (d.settings && d.settings.langs) || [];
     settings.langs = [...settings.langs, ...langs.filter(c => PK.lang(c) && !settings.langs.includes(c))];
     await chrome.storage.local.set({ words, settings });
-    $('io').textContent = '✓ Geïmporteerd.';
+    $('io').textContent = PK.t('imported');
     renderGrid(); renderDetail();
   } catch (err) {
-    $('io').textContent = 'Importeren mislukt: ' + err.message;
+    $('io').textContent = PK.t('importFailed', { err: err.message });
   }
   e.target.value = '';
 };
@@ -220,7 +231,7 @@ $('shortcuts').onclick = () => chrome.tabs.create({ url: 'chrome://extensions/sh
 chrome.storage.onChanged.addListener((ch, area) => {
   if (area !== 'local' || !(ch.words || ch.settings)) return;
   if (ch.words) words = ch.words.newValue || {};
-  if (ch.settings) settings = Object.assign({ langs: [] }, ch.settings.newValue);
+  if (ch.settings) { settings = Object.assign({ langs: [] }, ch.settings.newValue); applyBase(); }
   renderGrid();
   // Don't rebuild the rows while typing or recording
   if (!rec && (!document.activeElement || !$('detail').contains(document.activeElement) || document.activeElement.tagName !== 'INPUT')) renderDetail();
@@ -237,4 +248,3 @@ load().then(() => {
   if (row) { row.classList.add('focus'); row.scrollIntoView({ block: 'center' }); }
 });
 
-document.getElementById('ver').textContent = 'versie ' + chrome.runtime.getManifest().version;

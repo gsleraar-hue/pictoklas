@@ -5,6 +5,11 @@ const hint = document.getElementById('hint');
 const params = new URLSearchParams(location.search);
 const welcome = params.has('welkom');
 let myTab = null;
+
+// Texts follow the language of PictoClass (and switch along when the teacher changes it in the bubble)
+const i18n = settings => { PK.setBase(PK.baseOf(settings)); PK.applyI18n(); };
+chrome.storage.local.get('settings').then(d => i18n(d.settings));
+chrome.storage.onChanged.addListener((ch, area) => { if (area === 'local' && ch.settings) i18n(ch.settings.newValue); });
 chrome.tabs.getCurrent(t => { myTab = t && t.id; });
 
 function show(id) {
@@ -47,9 +52,8 @@ if (welcome) {
       coach.classList.toggle('left', !leftSide);
       coach.style.left = (leftSide ? r.left - w - 24 : r.right + 24) + 'px';
       coach.style.top = Math.max(12, r.top + r.height / 2 - h / 2) + 'px';
-      coach.innerHTML = step(1).classList.contains('done')
-        ? 'Klik op de <b>bubbel</b> als je weer een pictogram of zin nodig hebt. Met <b>✎ Aanpassen</b> kies je je pictogrammen, talen en stem.'
-        : 'Dit is je <b>PictoClass-bubbel</b>. Klik erop om te beginnen. Je kunt hem ook verslepen.';
+      const text = PK.t(step(1).classList.contains('done') ? 'coachAgain' : 'coachStart');
+      if (coach.innerHTML !== text) coach.innerHTML = text;
       coach.classList.toggle('pulse', !step(1).classList.contains('done'));
     } else {
       coach.classList.remove('on');

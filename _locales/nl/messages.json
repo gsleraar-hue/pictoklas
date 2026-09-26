@@ -1,0 +1,14 @@
+{
+  "extDescription": {
+    "message": "Grote, verplaatsbare pictogrammen voor de ISK-klas, automatisch met het woord en de uitspraak in de moedertaal."
+  },
+  "cmdOpen": {
+    "message": "PictoClass openen"
+  },
+  "cmdDock": {
+    "message": "PictoClass-bubbel tonen en openen"
+  },
+  "cmdClear": {
+    "message": "Alle pictogrammen weghalen"
+  }
+}

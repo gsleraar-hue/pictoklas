@@ -1,8 +1,9 @@
 {
   "manifest_version": 3,
   "name": "PictoClass",
-  "version": "2.0.1",
-  "description": "Grote, verplaatsbare pictogrammen voor de ISK-klas, automatisch met het woord en de uitspraak in de moedertaal.",
+  "version": "2.1.0",
+  "description": "__MSG_extDescription__",
+  "default_locale": "en",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
@@ -51,19 +52,19 @@
       "suggested_key": {
         "default": "Alt+Shift+P"
       },
-      "description": "PictoClass openen"
+      "description": "__MSG_cmdOpen__"
     },
     "open-dock": {
       "suggested_key": {
         "default": "Alt+Shift+O"
       },
-      "description": "PictoClass-bubbel tonen en openen"
+      "description": "__MSG_cmdDock__"
     },
     "clear-all": {
       "suggested_key": {
         "default": "Alt+Shift+X"
       },
-      "description": "Alle pictogrammen weghalen"
+      "description": "__MSG_cmdClear__"
     }
   }
 }

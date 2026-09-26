@@ -37,23 +37,23 @@
 </style>
 </head>
 <body>
-<div class="hint" id="hint">Klik op de blauwe bubbel om een pictogram te kiezen · F11 = volledig scherm</div>
+<div class="hint" id="hint" data-t="boardHint"></div>
 
 <div class="welcome" id="welcome">
   <div class="hero">
     <img src="icons/icon128.png" alt="">
-    <h1>Welkom bij PictoClass</h1>
-    <p>De blauwe bubbel staat vanaf nu op elke website die je opent. Daar begin je.</p>
+    <h1 data-t="welcomeTitle"></h1>
+    <p data-t="welcomeLead"></p>
     <ol class="steps">
-      <li id="s1"><b class="n">1</b><span>Klik op de <b>blauwe bubbel</b>.</span></li>
-      <li id="s2"><b class="n">2</b><span>Kies een pictogram, of typ een korte zin.</span></li>
-      <li id="s3"><b class="n">3</b><span>Kies op de kaart de <b>taal van je leerling</b>. Het woord en de uitspraak komen er vanzelf bij.</span></li>
+      <li id="s1"><b class="n">1</b><span data-t="step1"></span></li>
+      <li id="s2"><b class="n">2</b><span data-t="step2"></span></li>
+      <li id="s3"><b class="n">3</b><span data-t="step3"></span></li>
     </ol>
   </div>
 </div>
 
-<div class="coach right pulse" id="coachBubble">Dit is je <b>PictoClass-bubbel</b>. Klik erop om te beginnen. Je kunt hem ook verslepen.</div>
-<div class="coach up" id="coachPin">Zet PictoClass vast: klik rechtsboven op het <b>puzzelstukje</b> (naast je profielfoto) en dan op de <b>punaise</b> naast PictoClass.</div>
+<div class="coach right pulse" id="coachBubble" data-t="coachStart"></div>
+<div class="coach up" id="coachPin" data-t="coachPin"></div>
 
 <script src="picto.js"></script>
 <script src="overlay.js"></script>

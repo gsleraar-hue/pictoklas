@@ -3,18 +3,19 @@
 PictoClass is a Chrome extension for teachers of newcomer students (in the Netherlands: ISK, NT2 or "taalklas").
 With one click the teacher puts a large pictogram on the screen – *listen*, *look*, *be quiet*, *raise your hand*,
 *work together*, *put your phone away* and 19 more – with the word and its pronunciation in the student's home
-language next to the Dutch word. Students hear their own language first and then the Dutch instruction.
+language next to the Dutch or English word. Students hear their own language first and then the instruction language.
 
-The user interface is in Dutch, because the extension is made for Dutch classrooms.
+PictoClass comes in Dutch and English. One setting (**Taal van PictoClass / Language of PictoClass** in the bubble) sets both the
+interface and the instruction language on the cards; by default it follows the browser language.
 
 ## Features
 
 - Large pictogram cards on any web page, also in presentation (fullscreen) mode; drag to move, drag the corner or Ctrl+scroll to resize.
-- Every language row is a pair: home language ▶ | Dutch, plus ▶▶ to play both in a row.
-- Type a short sentence in the bubble: it becomes a card with the Dutch sentence and its translation, spoken in the home language and in Dutch.
+- Every language row is a pair: home language ▶ | Dutch or English, plus ▶▶ to play both in a row.
+- Type a short sentence in the bubble: it becomes a card with the sentence and its translation, spoken in the home language and in the instruction language.
 - Choose a female or male voice; used for every language the computer has such a voice for.
 - No preparation: pick the student's language on a card and PictoClass looks up the translation and a pronunciation by itself.
-- A floating **bubble** on every web page, right after install, to pick pictograms. **✎ Aanpassen** (edit) in the bubble chooses which pictograms, languages and voice are used.
+- A floating **bubble** on every web page, right after install, to pick pictograms. **✎ Customise** (Aanpassen) in the bubble chooses which pictograms, languages, voice and interface language are used.
 - Also reachable from the toolbar icon, the context menu and keyboard shortcuts (Alt+Shift+P, Alt+Shift+O, Alt+Shift+X).
 - 27 languages, including Arabic, Tigrinya, Ukrainian, Turkish, Polish, Persian, Pashto and Somali.
 - Export/import of the word set (JSON) to share with colleagues. No account; everything stays in the browser.
@@ -41,7 +42,8 @@ the grey play button on a card links straight there. Note that the Google endpoi
 | File | Purpose |
 | --- | --- |
 | `manifest.json` | Manifest V3 |
-| `picto.js` | Pictograms (as SVG shapes), languages, SVG builder – shared by all pages |
+| `picto.js` | Pictograms (as SVG shapes), languages, SVG builder and the Dutch/English interface texts – shared by all pages |
+| `_locales/` | Store name and description in English and Dutch |
 | `overlay.js` | Cards and bubble, in a closed shadow DOM on the page |
 | `background.js` | Service worker: injecting, context menu, playback, bubble registration |
 | `auto.js` | Automatic translation and pronunciation lookup (also for typed sentences) |

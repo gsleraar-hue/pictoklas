@@ -65,14 +65,15 @@ async function bubbleEverywhere() {
 // ---------- Context menu ----------
 async function buildMenu() {
   const { settings = {} } = await chrome.storage.local.get('settings');
+  PK.setBase(PK.baseOf(settings));
   chrome.contextMenus.removeAll(() => {
     const contexts = ['page', 'selection', 'link', 'image', 'editable', 'frame', 'video'];
     chrome.contextMenus.create({ id: 'pk', title: 'PictoClass', contexts });
-    chrome.contextMenus.create({ id: 'pk-dock', parentId: 'pk', title: 'Bubbel tonen', contexts });
+    chrome.contextMenus.create({ id: 'pk-dock', parentId: 'pk', title: PK.t('menuShowBubble'), contexts });
     chrome.contextMenus.create({ id: 'pk-sep1', parentId: 'pk', type: 'separator', contexts });
-    for (const p of PK.chosen(settings)) chrome.contextMenus.create({ id: 'pk-show:' + p.id, parentId: 'pk', title: p.label, contexts });
+    for (const p of PK.chosen(settings)) chrome.contextMenus.create({ id: 'pk-show:' + p.id, parentId: 'pk', title: PK.label(p.id), contexts });
     chrome.contextMenus.create({ id: 'pk-sep2', parentId: 'pk', type: 'separator', contexts });
-    chrome.contextMenus.create({ id: 'pk-clear', parentId: 'pk', title: 'Alles weghalen', contexts });
+    chrome.contextMenus.create({ id: 'pk-clear', parentId: 'pk', title: PK.t('menuClearAll'), contexts });
   });
 }
 
@@ -142,14 +143,15 @@ let playRun = 0;
 async function play(picto, seq) {
   const { words = {}, settings = {} } = await chrome.storage.local.get(['words', 'settings']);
   const w = words[picto] || {};
-  const order = Array.isArray(seq) && seq.length ? seq : ['nl'];
+  const base = PK.baseOf(settings); // instruction language: 'nl' or 'en'
+  const order = Array.isArray(seq) && seq.length ? seq : [base];
   const voices = await chrome.tts.getVoices();
   const gender = settings.voiceGender === 'male' || settings.voiceGender === 'female' ? settings.voiceGender : '';
-  const label = (w.nl && w.nl.text) || (PK.picto(picto) || {}).label || '';
+  const label = (w[base] && w[base].text) || PK.label(picto, base) || '';
   const items = [];
   for (const c of order) {
     const e = w[c] || {};
-    const text = c === 'nl' ? label.toLowerCase() : e.text || '';
+    const text = c === base ? label.toLowerCase() : e.text || '';
     if (e.audio && e.src === 'mic') { items.push({ audio: e.audio }); continue; }
     const pick = text && voiceFor(voices, c, gender);
     if (pick) { items.push({ text, lang: pick.lang, voiceName: pick.voiceName }); continue; }
@@ -195,15 +197,18 @@ function hashText(s) {
 async function addPhrase(raw) {
   const text = String(raw || '').replace(/\s+/g, ' ').trim().slice(0, 150);
   if (!text) return null;
-  const id = 'zin-' + hashText(text.toLowerCase());
+  const { settings = {} } = await chrome.storage.local.get('settings');
+  const base = PK.baseOf(settings);
+  // The id includes the language, so the same sentence in Dutch and English are separate cards
+  const id = 'zin-' + hashText(base + ':' + text.toLowerCase());
   const { phrases = [] } = await chrome.storage.local.get('phrases');
   let list = phrases.filter(x => x.id !== id);
-  list.unshift({ id, text });
+  list.unshift({ id, text, base });
   const dropped = list.slice(MAX_PHRASES).map(x => x.id);
   list = list.slice(0, MAX_PHRASES);
   await mutateWords(words => {
     words[id] = words[id] || {};
-    words[id].nl = Object.assign({}, words[id].nl, { text });
+    words[id][base] = Object.assign({}, words[id][base], { text });
     for (const old of dropped) delete words[old];
   });
   await chrome.storage.local.set({ phrases: list });
@@ -268,8 +273,8 @@ chrome.commands.onCommand.addListener((cmd, tab) => {
 // The menu follows the chosen pictograms
 chrome.storage.onChanged.addListener((ch, area) => {
   if (area !== 'local' || !ch.settings) return;
-  const a = (ch.settings.oldValue || {}).pictos, b = (ch.settings.newValue || {}).pictos;
-  if (JSON.stringify(a) !== JSON.stringify(b)) buildMenu();
+  const o = ch.settings.oldValue || {}, v = ch.settings.newValue || {};
+  if (JSON.stringify(o.pictos) !== JSON.stringify(v.pictos) || o.base !== v.base) buildMenu();
 });
 
 // Clean up data stored by versions before 1.8.0: drop speaker names and source links
