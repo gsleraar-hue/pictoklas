@@ -94,8 +94,6 @@
     .voicerow { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #E5E7EB; }
     .hintline.small { margin: 6px 0 0; font-size: 11.5px; }
     .editbottom { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #E5E7EB; }
-    .switchrow { display: flex; align-items: center; gap: 6px; font-weight: 600; cursor: pointer; }
-    .switchrow input { width: 16px; height: 16px; margin: 0; accent-color: #2563EB; }
     .dockbtn2 { all: unset; cursor: pointer; background: #2563EB; color: #fff; font-weight: 700; font-size: 12px; padding: 4px 12px; border-radius: 999px; }
     .saywrap { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #E5E7EB; }
     .saybox { display: flex; gap: 6px; }
@@ -694,7 +692,6 @@
   // Panel content. Normal mode: the chosen pictograms plus language chips.
   // Edit mode (✎ Aanpassen): every pictogram with an on/off mark, manage languages, bubble on every site.
   let editing = false;
-  let allSites = null; // is the bubble registered on every site? (asked from the service worker)
 
   function el(tag, cls, text) {
     const e = document.createElement(tag);
@@ -717,7 +714,6 @@
   function setEditing(on) {
     editing = on;
     if (on) {
-      chrome.runtime.sendMessage({ type: 'bubble-state' }).then(r => { allSites = !!(r && r.result); if (editing) fillDock(); }).catch(() => {});
       askCoverage();
     }
     fillDock();
@@ -786,7 +782,7 @@
       acts.append(done);
     } else {
       const edit = el('button', 'dockx', '✎ Aanpassen');
-      edit.title = 'Kies je pictogrammen, talen en of de bubbel op elke website staat';
+      edit.title = 'Kies je pictogrammen, talen en stem';
       edit.addEventListener('click', () => setEditing(true));
       // No "hide" option on purpose: without the bubble a teacher could get stuck on the page
       acts.append(edit);
@@ -844,17 +840,6 @@
       }
       foot.appendChild(add);
 
-      const row = el('label', 'switchrow');
-      const cb = el('input');
-      cb.type = 'checkbox';
-      cb.checked = !!allSites;
-      cb.disabled = allSites === null;
-      row.append(cb, el('span', null, 'Bubbel op elke website'));
-      cb.addEventListener('change', () => {
-        // Asking for the all-sites permission needs an extension page; the service worker opens a small window for it
-        chrome.runtime.sendMessage({ type: cb.checked ? 'bubble-grant' : 'bubble-revoke' }).catch(() => {});
-        if (!cb.checked) allSites = false;
-      });
       // Voice: default / female / male. Tell honestly which languages have no voice of that kind here.
       const vrow = el('div', 'voicerow');
       vrow.appendChild(el('span', 'flabel inline', 'Stem'));
@@ -874,7 +859,7 @@
       const more = el('button', 'dockx', 'Woorden verbeteren →');
       more.addEventListener('click', () => chrome.runtime.sendMessage({ type: 'options' }).catch(() => {}));
       const bottom = el('div', 'editbottom');
-      bottom.append(row, more);
+      bottom.append(more);
       bpanel.append(bottom);
     } else {
       if (langs.length) {
@@ -926,7 +911,6 @@
     else if (msg.type === 'pk-show') { show(msg.picto); reply({ ok: true }); }
     else if (msg.type === 'pk-clear') { clear(); reply({ ok: true }); }
     else if (msg.type === 'pk-dock') { dock(true, !!msg.edit); reply({ ok: true }); }
-    else if (msg.type === 'pk-bubble-state') { allSites = !!msg.on; if (editing) fillDock(); }
   });
 
   // When this copy is cut off from the extension (update/reload), take its cards and bubble off the page
@@ -936,5 +920,10 @@
     if (!alive) { clearInterval(orphanCheck); host.remove(); }
   }, 2000);
 
-  globalThis.PKOverlay = { show, remove, clear, dock, open: () => [...cards.keys()] };
+  globalThis.PKOverlay = {
+    show, remove, clear, dock, open: () => [...cards.keys()],
+    // for the welcome page
+    bubbleRect: () => bubble ? bubble.getBoundingClientRect() : null,
+    panelOpen: () => !!(bpanel && bpanel.classList.contains('open'))
+  };
 })();

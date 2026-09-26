@@ -2,16 +2,58 @@
 <html lang="nl">
 <head>
 <meta charset="utf-8">
-<title>PictoClass – bord</title>
+<title>PictoClass</title>
 <link rel="stylesheet" href="ui.css">
 <style>
   html, body { height: 100%; }
   body { background: #fff; overflow: hidden; }
   .hint { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; color: #D1D5DB; font-size: 22px; pointer-events: none; text-align: center; padding: 20px; }
+
+  /* Welcome (first run) */
+  .welcome { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; pointer-events: none; padding: 24px; }
+  body.welkom .welcome { display: flex; }
+  body.welkom .hint { display: none; }
+  .hero { max-width: 560px; text-align: left; }
+  .hero img { width: 72px; height: 72px; }
+  .hero h1 { font-size: 38px; margin: 12px 0 6px; }
+  .hero p { font-size: 18px; color: var(--muted); margin: 0 0 22px; }
+  .steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+  .steps li { display: flex; gap: 14px; align-items: flex-start; font-size: 18px; }
+  .steps b.n { flex: none; width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .steps li.done { color: var(--muted); }
+  .steps li.done b.n { background: #16A34A; }
+
+  .coach { position: fixed; display: none; max-width: 300px; background: #111827; color: #fff; border-radius: 14px; padding: 14px 16px; font-size: 16px; line-height: 1.35;
+    box-shadow: 0 10px 30px rgba(0,0,0,.25); pointer-events: none; z-index: 5; }
+  .coach b { color: #FDE68A; }
+  .coach::after { content: ''; position: absolute; width: 0; height: 0; border: 12px solid transparent; }
+  .coach.right::after { right: -22px; top: calc(50% - 12px); border-left-color: #111827; }
+  .coach.left::after { left: -22px; top: calc(50% - 12px); border-right-color: #111827; }
+  .coach.up::after { top: -22px; right: 26px; border-bottom-color: #111827; }
+  .coach.pulse { animation: nudge 1.6s ease-in-out infinite; }
+  @keyframes nudge { 50% { transform: translateX(-6px); } }
+  body.welkom .coach.on { display: block; }
 </style>
 </head>
 <body>
 <div class="hint" id="hint">Klik op de blauwe bubbel om een pictogram te kiezen · F11 = volledig scherm</div>
+
+<div class="welcome" id="welcome">
+  <div class="hero">
+    <img src="icons/icon128.png" alt="">
+    <h1>Welkom bij PictoClass</h1>
+    <p>De blauwe bubbel staat vanaf nu op elke website die je opent. Daar begin je.</p>
+    <ol class="steps">
+      <li id="s1"><b class="n">1</b><span>Klik op de <b>blauwe bubbel</b>.</span></li>
+      <li id="s2"><b class="n">2</b><span>Kies een pictogram, of typ een korte zin.</span></li>
+      <li id="s3"><b class="n">3</b><span>Kies op de kaart de <b>taal van je leerling</b>. Het woord en de uitspraak komen er vanzelf bij.</span></li>
+    </ol>
+  </div>
+</div>
+
+<div class="coach right pulse" id="coachBubble">Dit is je <b>PictoClass-bubbel</b>. Klik erop om te beginnen. Je kunt hem ook verslepen.</div>
+<div class="coach up" id="coachPin">Zet PictoClass vast: klik rechtsboven op het <b>puzzelstukje</b> en dan op de <b>punaise</b> naast PictoClass.</div>
+
 <script src="picto.js"></script>
 <script src="overlay.js"></script>
 <script src="bord.js"></script>

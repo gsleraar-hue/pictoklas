@@ -14,7 +14,7 @@ The user interface is in Dutch, because the extension is made for Dutch classroo
 - Type a short sentence in the bubble: it becomes a card with the Dutch sentence and its translation, spoken in the home language and in Dutch.
 - Choose a female or male voice; used for every language the computer has such a voice for.
 - No preparation: pick the student's language on a card and PictoClass looks up the translation and a pronunciation by itself.
-- A floating **bubble** on top of the page to pick pictograms. **✎ Aanpassen** (edit) in the bubble chooses which pictograms and languages are used and whether the bubble shows on every site.
+- A floating **bubble** on every web page, right after install, to pick pictograms. **✎ Aanpassen** (edit) in the bubble chooses which pictograms, languages and voice are used.
 - Also reachable from the toolbar icon, the context menu and keyboard shortcuts (Alt+Shift+P, Alt+Shift+O, Alt+Shift+X).
 - 27 languages, including Arabic, Tigrinya, Ukrainian, Turkish, Polish, Persian, Pashto and Somali.
 - Export/import of the word set (JSON) to share with colleagues. No account; everything stays in the browser.
@@ -34,7 +34,7 @@ the grey play button on a card links straight there. Note that the Google endpoi
 
 1. Open `chrome://extensions` and switch on **Developer mode**.
 2. Click **Load unpacked** and choose this folder.
-3. On first install the empty board opens with the bubble in edit mode.
+3. On first install a welcome tab points at the bubble (now on every page) and at the toolbar pin.
 
 ## Files
 
@@ -47,7 +47,7 @@ the grey play button on a card links straight there. Note that the Google endpoi
 | `auto.js` | Automatic translation and pronunciation lookup (also for typed sentences) |
 | `voices.js` | Tells male and female system voices apart by their names |
 | `offscreen.*` | Plays audio for the service worker |
-| `popup.*`, `options.*`, `bord.*`, `grant.*` | Toolbar popup, word editor, empty board, permission window |
+| `popup.*`, `options.*`, `bord.*` | Toolbar popup, word editor, empty board (also the welcome page after install) |
 | `store/` | Chrome Web Store images and the pages used to render them |
 | `privacy.html` | Privacy policy (Dutch), published with GitHub Pages |
 

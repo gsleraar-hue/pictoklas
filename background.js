@@ -53,28 +53,14 @@ async function openDock(givenTab) {
   return 'nieuw-bord';
 }
 
-// ---------- Bubble on every page (optional permission, switched on from the bubble) ----------
+// ---------- Bubble on every page ----------
+// The content script puts the bubble on every page that loads. Tabs that were already open
+// (at install or update) get it injected once, so it shows up everywhere right away.
 const ALL_SITES = ['https://*/*', 'http://*/*'];
 
-async function syncBubble() {
-  const has = await chrome.permissions.contains({ origins: ALL_SITES });
-  const regs = await chrome.scripting.getRegisteredContentScripts({ ids: ['pk-bubble'] });
-  if (has && !regs.length) {
-    await chrome.scripting.registerContentScripts([{
-      id: 'pk-bubble', matches: ALL_SITES, js: ['picto.js', 'overlay.js'], runAt: 'document_idle', persistAcrossSessions: true
-    }]);
-    // Show it right away in tabs that are already open
-    for (const tab of await chrome.tabs.query({ url: ALL_SITES })) ensureOverlay(tab.id).catch(() => {});
-  } else if (!has && regs.length) {
-    await chrome.scripting.unregisterContentScripts({ ids: ['pk-bubble'] });
-  }
-  // Let open bubbles update their switch
-  for (const tab of await chrome.tabs.query({})) chrome.tabs.sendMessage(tab.id, { type: 'pk-bubble-state', on: has }).catch(() => {});
-  return has;
+async function bubbleEverywhere() {
+  for (const tab of await chrome.tabs.query({ url: ALL_SITES })) ensureOverlay(tab.id).catch(() => {});
 }
-chrome.permissions.onAdded.addListener(() => syncBubble());
-chrome.permissions.onRemoved.addListener(() => syncBubble());
-chrome.runtime.onStartup.addListener(() => syncBubble());
 
 // ---------- Context menu ----------
 async function buildMenu() {
@@ -266,11 +252,8 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
     'phrase-add': () => addPhrase(msg.text),
     'phrase-remove': () => removePhrase(msg.id),
     options: () => openOptions(msg.picto, msg.lang),
-    'bubble-sync': () => syncBubble(),
-    'bubble-state': () => chrome.permissions.contains({ origins: ALL_SITES }),
-    // A permission prompt needs a user click on an extension page: open a small window for it
-    'bubble-grant': () => chrome.windows.create({ url: 'grant.html', type: 'popup', width: 460, height: 330, focused: true }),
-    'bubble-revoke': async () => { await chrome.permissions.remove({ origins: ALL_SITES }); return syncBubble(); }
+    // Is PictoClass pinned to the toolbar? (the welcome page hides its tip once it is)
+    pinned: async () => (chrome.action.getUserSettings ? (await chrome.action.getUserSettings()).isOnToolbar : null)
   }[msg.type];
   if (!run) return;
   run().then(r => reply({ ok: true, result: r }), e => reply({ ok: false, error: String(e && e.message || e) }));
@@ -305,18 +288,18 @@ async function cleanOldData() {
 
 chrome.runtime.onInstalled.addListener(async ({ reason }) => {
   buildMenu();
-  syncBubble();
   if (reason === 'update') {
     cleanOldData().catch(() => {});
-    // Old layers on open tabs stop working after an update: put a fresh bubble back where the bubble is on everywhere
-    if (await chrome.permissions.contains({ origins: ALL_SITES })) {
-      for (const tab of await chrome.tabs.query({ url: ALL_SITES })) ensureOverlay(tab.id).catch(() => {});
-    }
+    // Versions before 2.0 registered the bubble script at runtime; the manifest does that now
+    const old = await chrome.scripting.getRegisteredContentScripts({ ids: ['pk-bubble'] }).catch(() => []);
+    if (old.length) await chrome.scripting.unregisterContentScripts({ ids: ['pk-bubble'] }).catch(() => {});
   }
+  // Old layers on open tabs stop working after an update, and new installs have no bubble yet on open tabs
+  bubbleEverywhere();
   if (reason === 'install') {
     const { settings } = await chrome.storage.local.get('settings');
     if (!settings) await chrome.storage.local.set({ settings: { langs: [] } });
-    // First run: the empty board with the bubble open in edit mode
-    chrome.tabs.create({ url: BORD + '?setup=1' });
+    // First run: a welcome tab that points at the bubble and at the toolbar pin
+    chrome.tabs.create({ url: BORD + '?welkom=1' });
   }
 });
