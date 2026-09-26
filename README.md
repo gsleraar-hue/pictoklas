@@ -64,4 +64,4 @@ Run `maak-zip.cmd` (Windows) to create `store/pictoclass-<version>.zip` with onl
 ## Privacy
 
 PictoClass collects no personal data. Only the fixed pictogram words are sent to the translation and pronunciation services.
-Privacy policy: https://gsleraar-hue.github.io/pictoklas/privacy.html
+Privacy policy: https://pictoclass.com/privacy.html
