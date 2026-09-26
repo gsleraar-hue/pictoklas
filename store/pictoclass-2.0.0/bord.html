@@ -29,8 +29,7 @@
   .coach::after { content: ''; position: absolute; width: 0; height: 0; border: 12px solid transparent; }
   .coach.right::after { right: -22px; top: calc(50% - 12px); border-left-color: #111827; }
   .coach.left::after { left: -22px; top: calc(50% - 12px); border-right-color: #111827; }
-  /* Chrome's puzzle icon sits about 98px from the right edge (left of the profile picture and the ⋮ menu) */
-  .coach.up::after { top: -22px; right: 68px; border-bottom-color: #111827; }
+  .coach.up::after { top: -22px; right: 26px; border-bottom-color: #111827; }
   .coach.pulse { animation: nudge 1.6s ease-in-out infinite; }
   @keyframes nudge { 50% { transform: translateX(-6px); } }
   body.welkom .coach.on { display: block; }
@@ -53,7 +52,7 @@
 </div>
 
 <div class="coach right pulse" id="coachBubble">Dit is je <b>PictoClass-bubbel</b>. Klik erop om te beginnen. Je kunt hem ook verslepen.</div>
-<div class="coach up" id="coachPin">Zet PictoClass vast: klik rechtsboven op het <b>puzzelstukje</b> (naast je profielfoto) en dan op de <b>punaise</b> naast PictoClass.</div>
+<div class="coach up" id="coachPin">Zet PictoClass vast: klik rechtsboven op het <b>puzzelstukje</b> en dan op de <b>punaise</b> naast PictoClass.</div>
 
 <script src="picto.js"></script>
 <script src="overlay.js"></script>

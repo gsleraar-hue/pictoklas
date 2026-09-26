@@ -55,7 +55,7 @@ if (welcome) {
       coach.classList.remove('on');
     }
     pin.classList.toggle('on', !pinned);
-    pin.style.right = '18px'; // arrow (68px + 12px half width) ends up at ~98px from the right edge
+    pin.style.right = '18px';
     pin.style.top = '14px';
   };
   setInterval(tick, 250);
