@@ -20,43 +20,43 @@
   <div class="wrap nav-inner">
     <a class="brand" href="#"><img src="icons/icon48.png" alt=""><span>PictoClass</span></a>
     <div class="nav-links">
-      <a href="#waarom">Waarom</a>
-      <a href="#pictogrammen">Pictogrammen</a>
-      <a href="#installeren">Installeren</a>
+      <a href="#waarom" data-s="navWhy">Waarom</a>
+      <a href="#pictogrammen" data-s="navPictos">Pictogrammen</a>
+      <a href="#installeren" data-s="navInstall">Installeren</a>
     </div>
-    <a class="btn btn-sm" href="https://chromewebstore.google.com/detail/icmdakhgjkinocnnpnjaafkihjhcjood"><span class="long">Toevoegen aan Chrome</span><span class="short">Installeren</span></a>
+    <a class="btn btn-sm" href="https://chromewebstore.google.com/detail/icmdakhgjkinocnnpnjaafkihjhcjood"><span class="long" data-s="addLong">Toevoegen aan Chrome</span><span class="short" data-s="addShort">Installeren</span></a>
   </div>
 </nav>
 
 <header class="hero">
   <div class="wrap">
-    <span class="eyebrow">Gratis Chrome-extensie voor de ISK-klas</span>
-    <h1>Elke instructie, ook in de <em>moedertaal</em></h1>
-    <p class="hero-sub">PictoClass zet met één klik een groot pictogram over je les: luisteren, stil zijn, samenwerken. Met het woord in de taal van je leerling naast het Nederlands. Eerst de eigen taal, dan de Nederlandse instructie.</p>
+    <span class="eyebrow" data-s="eyebrow">Gratis Chrome-extensie voor de ISK-klas</span>
+    <h1 data-s="h1">Elke instructie, ook in de <em>moedertaal</em></h1>
+    <p class="hero-sub" data-s="heroSub">PictoClass zet met één klik een groot pictogram over je les: luisteren, stil zijn, samenwerken. Met het woord in de taal van je leerling naast het Nederlands. Eerst de eigen taal, dan de Nederlandse instructie.</p>
     <div class="hero-actions">
-      <a class="btn" href="https://chromewebstore.google.com/detail/icmdakhgjkinocnnpnjaafkihjhcjood">Toevoegen aan Chrome, gratis</a>
-      <a class="btn btn-ghost" href="#pictogrammen">Bekijk de pictogrammen</a>
+      <a class="btn" href="https://chromewebstore.google.com/detail/icmdakhgjkinocnnpnjaafkihjhcjood" data-s="addFree">Toevoegen aan Chrome, gratis</a>
+      <a class="btn btn-ghost" href="#pictogrammen" data-s="seePictos">Bekijk de pictogrammen</a>
     </div>
     <div class="meta">
-      <div><b>25</b><span>pictogrammen</span></div>
-      <div><b>27</b><span>talen</span></div>
-      <div><b>0</b><span>accounts nodig</span></div>
-      <div><b>1</b><span>klik op de bubbel</span></div>
+      <div><b>25</b><span data-s="mPictos">pictogrammen</span></div>
+      <div><b>27</b><span data-s="mLangs">talen</span></div>
+      <div><b>0</b><span data-s="mAccounts">accounts nodig</span></div>
+      <div><b>1</b><span data-s="mClick">klik op de bubbel</span></div>
     </div>
 
     <!-- Live demo: works like the extension (click the bubble, pick a pictogram and a language, press play) -->
     <div class="stage">
       <div class="glow"></div>
       <div class="frame">
-        <div class="titlebar"><i></i><i></i><i></i><span class="url">Mijn les · Het weer</span></div>
+        <div class="titlebar"><i></i><i></i><i></i><span class="url" data-s="url">Mijn les · Het weer</span></div>
         <div class="canvas" id="demo">
           <div class="slide">
-            <h3>Het weer</h3>
-            <p>Kijk naar de foto. Wat voor weer is het vandaag?</p>
-            <ul><li>de zon schijnt</li><li>het regent</li><li>het waait</li></ul>
+            <h3 data-s="slideH">Het weer</h3>
+            <p data-s="slideP">Kijk naar de foto. Wat voor weer is het vandaag?</p>
+            <ul data-s="slideUl"><li>de zon schijnt</li><li>het regent</li><li>het waait</li></ul>
             <div class="sky"><span class="sun"></span><span class="cloud"></span></div>
           </div>
-          <div class="try" id="tryHint">Probeer het: klik op de bubbel</div>
+          <div class="try" id="tryHint" data-s="try">Probeer het: klik op de bubbel</div>
         </div>
       </div>
     </div>
@@ -65,23 +65,23 @@
 
 <section class="why" id="waarom">
   <div class="wrap">
-    <span class="eyebrow">Waarom PictoClass</span>
-    <h2>Gemaakt voor de klas waar niet iedereen Nederlands spreekt</h2>
-    <p class="section-sub">Geen losse app, geen voorbereiding. Gewoon bovenop de les die je al geeft.</p>
+    <span class="eyebrow" data-s="whyEyebrow">Waarom PictoClass</span>
+    <h2 data-s="whyH">Gemaakt voor de klas waar niet iedereen Nederlands spreekt</h2>
+    <p class="section-sub" data-s="whySub">Geen losse app, geen voorbereiding. Gewoon bovenop de les die je al geeft.</p>
     <div class="why-grid">
-      <article><span class="ico" data-icon="luisteren"></span><h3>Moedertaal naast Nederlands</h3><p>Elke kaart laat het woord zien in de taal van je leerling én in het Nederlands. Eén klik en je hoort ze na elkaar.</p></article>
-      <article><span class="ico" data-icon="bord"></span><h3>Altijd bij de hand</h3><p>De bubbel zweeft over elke website: je lesmateriaal, een presentatie, een video. Sleep hem waar je wilt.</p></article>
-      <article><span class="ico" data-icon="praten"></span><h3>Typ je eigen zin</h3><p>"Doe je jas uit." Typ het in de bubbel en PictoClass zegt het meteen, in de moedertaal en in het Nederlands.</p></article>
-      <article><span class="ico" data-icon="vinger"></span><h3>Jouw stem, jouw klas</h3><p>Kies een mannen- of vrouwenstem. Of laat een leerling een woord in de eigen taal inspreken.</p></article>
+      <article><span class="ico" data-icon="luisteren"></span><h3 data-s="w1h">Moedertaal naast Nederlands</h3><p data-s="w1p">Elke kaart laat het woord zien in de taal van je leerling én in het Nederlands. Eén klik en je hoort ze na elkaar.</p></article>
+      <article><span class="ico" data-icon="bord"></span><h3 data-s="w2h">Altijd bij de hand</h3><p data-s="w2p">De bubbel zweeft over elke website: je lesmateriaal, een presentatie, een video. Sleep hem waar je wilt.</p></article>
+      <article><span class="ico" data-icon="praten"></span><h3 data-s="w3h">Typ je eigen zin</h3><p data-s="w3p">"Doe je jas uit." Typ het in de bubbel en PictoClass zegt het meteen, in de moedertaal en in het Nederlands.</p></article>
+      <article><span class="ico" data-icon="vinger"></span><h3 data-s="w4h">Jouw stem, jouw klas</h3><p data-s="w4p">Kies een mannen- of vrouwenstem. Of laat een leerling een woord in de eigen taal inspreken.</p></article>
     </div>
   </div>
 </section>
 
 <section class="showcase" id="pictogrammen">
   <div class="wrap">
-    <span class="eyebrow">Alle 25 pictogrammen</span>
-    <h2>De instructies die je elke les geeft</h2>
-    <p class="section-sub">Kies zelf welke je in je bubbel wilt hebben.</p>
+    <span class="eyebrow" data-s="allEyebrow">Alle 25 pictogrammen</span>
+    <h2 data-s="allH">De instructies die je elke les geeft</h2>
+    <p class="section-sub" data-s="allSub">Kies zelf welke je in je bubbel wilt hebben.</p>
     <div class="tiles" id="tiles"></div>
   </div>
 </section>
@@ -89,17 +89,17 @@
 <section class="install" id="installeren">
   <div class="wrap install-inner">
     <div>
-      <span class="eyebrow">Installeren</span>
-      <h2>In een minuut klaar voor je les</h2>
+      <span class="eyebrow" data-s="insEyebrow">Installeren</span>
+      <h2 data-s="insH">In een minuut klaar voor je les</h2>
       <ol class="steps">
-        <li><b>1</b><span>Klik op <strong>Toevoegen aan Chrome</strong></span></li>
-        <li><b>2</b><span>Bevestig in het venster van Chrome</span></li>
-        <li><b>3</b><span>Klik op de <strong>blauwe bubbel</strong> en begin</span></li>
+        <li><b>1</b><span data-s="s1">Klik op <strong>Toevoegen aan Chrome</strong></span></li>
+        <li><b>2</b><span data-s="s2">Bevestig in het venster van Chrome</span></li>
+        <li><b>3</b><span data-s="s3">Klik op de <strong>blauwe bubbel</strong> en begin</span></li>
       </ol>
-      <a class="btn" href="https://chromewebstore.google.com/detail/icmdakhgjkinocnnpnjaafkihjhcjood">Toevoegen aan Chrome, gratis</a>
-      <p class="browsers">Werkt in Chrome en Edge.</p>
+      <a class="btn" href="https://chromewebstore.google.com/detail/icmdakhgjkinocnnpnjaafkihjhcjood" data-s="addFree">Toevoegen aan Chrome, gratis</a>
+      <p class="browsers" data-s="browsers">Werkt in Chrome en Edge.</p>
     </div>
-    <img class="install-shot" src="store/screenshot-1.png" alt="PictoClass-kaarten op een lespagina">
+    <img class="install-shot" src="store/screenshot-1.png" alt="PictoClass-kaarten op een lespagina" data-s-alt="shotAlt">
   </div>
 </section>
 
@@ -107,6 +107,7 @@
   <div class="wrap foot-inner">
     <span>© 2026 PictoClass</span>
     <a href="privacy.html">Privacy</a>
+    <a href="?lang=en" id="switchLang" hreflang="en">English</a>
   </div>
 </footer>
 

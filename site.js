@@ -1,4 +1,50 @@
 // Website: the live demo in the hero (works like the extension) and the pictogram showcase.
+// Dutch or English: ?lang=nl|en wins, otherwise the browser language decides (like the extension itself).
+
+// ---------- Language ----------
+const EN = {
+  title: 'PictoClass – every instruction, also in the home language',
+  description: 'Free Chrome extension for classes with newcomer students: large pictograms on any web page, with the student’s home language next to English.',
+  navWhy: 'Why', navPictos: 'Pictograms', navInstall: 'Install', addLong: 'Add to Chrome', addShort: 'Install',
+  eyebrow: 'Free Chrome extension for classes with newcomer students',
+  h1: 'Every instruction, also in the <em>home language</em>',
+  heroSub: 'With one click, PictoClass puts a large pictogram over your lesson: listen, be quiet, work together. With the word in your student’s language next to English. First their own language, then the English instruction.',
+  addFree: 'Add to Chrome, free', seePictos: 'See the pictograms',
+  mPictos: 'pictograms', mLangs: 'languages', mAccounts: 'accounts needed', mClick: 'click on the bubble',
+  url: 'My lesson · The weather', slideH: 'The weather', slideP: 'Look at the photo. What is the weather like today?',
+  slideUl: '<li>the sun is shining</li><li>it is raining</li><li>it is windy</li>',
+  try: 'Try it: click the bubble',
+  whyEyebrow: 'Why PictoClass', whyH: 'Made for the class where not everyone speaks the language yet',
+  whySub: 'No separate app, no preparation. Just on top of the lesson you already teach.',
+  w1h: 'Home language next to English', w1p: 'Every card shows the word in your student’s language and in English. One click and you hear them one after the other.',
+  w2h: 'Always at hand', w2p: 'The bubble floats over every website: your lesson material, a presentation, a video. Drag it wherever you like.',
+  w3h: 'Type your own sentence', w3p: '"Take off your coat." Type it in the bubble and PictoClass says it right away, in the home language and in English.',
+  w4h: 'Your voice, your class', w4p: 'Choose a male or female voice. Or let a student record a word in their own language.',
+  allEyebrow: 'All 25 pictograms', allH: 'The instructions you give every lesson', allSub: 'Choose which ones you want in your bubble.',
+  insEyebrow: 'Install', insH: 'Ready for your lesson in a minute',
+  s1: 'Click <strong>Add to Chrome</strong>', s2: 'Confirm in the Chrome window', s3: 'Click the <strong>blue bubble</strong> and start',
+  browsers: 'Works in Chrome and Edge.', shotAlt: 'PictoClass cards on a lesson page',
+  choose: 'choose a pictogram', play: 'Play', pair: 'First the home language, then English', bubble: 'PictoClass bubble', other: 'Nederlands'
+};
+const NL = {
+  title: document.title, description: document.querySelector('meta[name=description]').content,
+  choose: 'kies een pictogram', play: 'Afspelen', pair: 'Eerst moedertaal, dan Nederlands', bubble: 'PictoClass-bubbel', other: 'English'
+};
+for (const e of document.querySelectorAll('[data-s]')) NL[e.dataset.s] = e.innerHTML;
+for (const e of document.querySelectorAll('[data-s-alt]')) NL[e.dataset.sAlt] = e.alt;
+const B = PK.setBase(new URLSearchParams(location.search).get('lang'));
+const S = B === 'en' ? EN : NL;
+document.documentElement.lang = B;
+document.title = S.title;
+document.querySelector('meta[name=description]').content = S.description;
+for (const e of document.querySelectorAll('[data-s]')) e.innerHTML = S[e.dataset.s];
+for (const e of document.querySelectorAll('[data-s-alt]')) e.alt = S[e.dataset.sAlt];
+const sw = document.getElementById('switchLang');
+sw.textContent = S.other;
+sw.href = '?lang=' + (B === 'en' ? 'nl' : 'en');
+sw.hreflang = B === 'en' ? 'nl' : 'en';
+const BCP = B === 'en' ? 'en-GB' : 'nl-NL';
+
 const NS = 'http://www.w3.org/2000/svg';
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 const playIcon = n => {
@@ -20,7 +66,7 @@ for (const p of PK.PICTOS) {
   const ic = el('span', 'ic');
   ic.style.background = p.color;
   ic.appendChild(PK.icon(p.id));
-  t.append(ic, el('b', null, p.label));
+  t.append(ic, el('b', null, PK.label(p.id)));
   tiles.appendChild(t);
 }
 
@@ -36,7 +82,7 @@ const DEMO = {
   schrijven: { ar: 'اكتب', uk: 'писати', ti: 'ጽሓፍ', tr: 'yazmak' },
   klaar: { ar: 'انتهى', uk: 'готово', ti: 'ተወዲኡ', tr: 'bitti' }
 };
-const LANGS = [['ar', 'Arabisch', 'ar-SA'], ['uk', 'Oekraïens', 'uk-UA'], ['ti', 'Tigrinya', 'ti-ER'], ['tr', 'Turks', 'tr-TR']];
+const LANGS = [['ar', 'ar-SA'], ['uk', 'uk-UA'], ['ti', 'ti-ER'], ['tr', 'tr-TR']].map(([c, bcp]) => [c, PK.langName(c), bcp]);
 const demo = document.getElementById('demo');
 const hint = document.getElementById('tryHint');
 let lang = 'ar';
@@ -67,7 +113,7 @@ async function playSeq(btn, items) {
 function playBtn(color, items) {
   const b = el('button', 'play');
   b.style.background = color;
-  b.setAttribute('aria-label', 'Afspelen');
+  b.setAttribute('aria-label', S.play);
   b.appendChild(playIcon(1));
   b.addEventListener('click', e => { e.stopPropagation(); playSeq(b, items); });
   return b;
@@ -78,7 +124,7 @@ function renderCard() {
   const p = PK.picto(current);
   const [code, , bcp] = LANGS.find(l => l[0] === lang);
   const word = DEMO[current][code];
-  const nlWord = p.label.toLowerCase();
+  const nlWord = PK.label(current).toLowerCase();
   if (!card) {
     card = el('div', 'd-card');
     demo.appendChild(card);
@@ -88,8 +134,8 @@ function renderCard() {
   const ic = el('div', 'ic');
   ic.style.background = p.color;
   ic.appendChild(PK.icon(current));
-  const title = el('div', 'title', p.label);
-  title.appendChild(playBtn('#111827', [[nlWord, 'nl-NL']]));
+  const title = el('div', 'title', PK.label(current));
+  title.appendChild(playBtn('#111827', [[nlWord, BCP]]));
   const row = el('div', 'd-row');
   const own = el('div', 'd-half');
   const t1 = el('div', 'd-txt');
@@ -99,12 +145,12 @@ function renderCard() {
   own.append(t1, playBtn(p.color, [[word, bcp]]));
   const nl = el('div', 'd-half nlh');
   const t2 = el('div', 'd-txt');
-  t2.append(el('small', null, 'NL'), el('span', null, nlWord));
+  t2.append(el('small', null, B.toUpperCase()), el('span', null, nlWord));
   nl.appendChild(t2);
   const pair = el('button', 'pair');
-  pair.setAttribute('aria-label', 'Eerst moedertaal, dan Nederlands');
+  pair.setAttribute('aria-label', S.pair);
   pair.appendChild(playIcon(2));
-  pair.addEventListener('click', e => { e.stopPropagation(); playSeq(pair, [[word, bcp], [nlWord, 'nl-NL']]); });
+  pair.addEventListener('click', e => { e.stopPropagation(); playSeq(pair, [[word, bcp], [nlWord, BCP]]); });
   row.append(own, nl, pair);
   card.append(ic, title, row);
 }
@@ -127,11 +173,11 @@ function dragCard(c) {
 
 // Bubble + panel
 const bubble = el('button', 'd-bubble');
-bubble.setAttribute('aria-label', 'PictoClass-bubbel');
+bubble.setAttribute('aria-label', S.bubble);
 bubble.appendChild(PK.icon('bord'));
 const panel = el('div', 'd-panel');
 const head = el('div', 'ph', 'PictoClass');
-head.appendChild(el('span', null, 'kies een pictogram'));
+head.appendChild(el('span', null, S.choose));
 const grid = el('div', 'd-grid');
 for (const id of Object.keys(DEMO)) {
   const p = PK.picto(id);
@@ -139,7 +185,7 @@ for (const id of Object.keys(DEMO)) {
   const ic = el('span', 'ic');
   ic.style.background = p.color;
   ic.appendChild(PK.icon(id));
-  b.append(ic, el('span', null, p.label));
+  b.append(ic, el('span', null, PK.label(id)));
   b.addEventListener('click', () => { current = id; renderCard(); panel.classList.remove('open'); });
   grid.appendChild(b);
 }
